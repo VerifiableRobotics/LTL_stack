@@ -1,0 +1,12 @@
+# inputs
+string ltl_filename  #.slugsin or .structuredSlugs
+string[] options
+string output_filename
+---
+# outputs
+bool realizable
+float64 synthesis_time
+string output_message
+---
+# feedback
+float64 elapsed_time

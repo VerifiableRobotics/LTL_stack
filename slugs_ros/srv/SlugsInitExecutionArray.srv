@@ -1,0 +1,5 @@
+string[] init_inputs_outputs_key_array
+bool[]   init_inputs_outputs_value_array
+---
+string[] current_inputs_outputs_key_array
+bool[]   current_inputs_outputs_value_array
