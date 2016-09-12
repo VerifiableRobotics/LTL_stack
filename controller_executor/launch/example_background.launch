@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- launch turtlesim -->
+    <node name="turtle1" pkg="turtlesim" type="turtlesim_node"/>
+
+    <!-- launch uvc_camera -->
+    <node name="uvc_camera" pkg="uvc_camera" type="uvc_camera_node"/>
+
+    <!-- launch april tags -->
+    <arg name="image_rect" default="image_raw"/>
+    <include file="$(find controller_executor)/launch/apriltags_example.launch">
+      <arg name="image_rect" value="$(arg image_rect)"/>
+    </include>
+
+</launch>

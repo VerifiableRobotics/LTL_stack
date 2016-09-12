@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!--inputs-->
+	<node name="sense_object" pkg="controller_executor" type="get_tag.py" args="sense_object /sense_object/sense_object --tag_no 0 --sensor_topic /tag_detections_forward" />
+	<node name="person" pkg="controller_executor" type="get_tag.py" args="person /person/person --tag_no 5 --sensor_topic /tag_detections_forward" />
+
+	<!--outputs-->
+	<node name="stop_camera" pkg="controller_executor" type="forward_info.py" args="stop_camera /controller/stop_camera --topic_type apriltags_ros.msg.AprilTagDetectionArray --publish_topic /tag_detections_forward --subscribe_info_topic /tag_detections --toggle_boolean True" />
+	<node name="move" pkg="controller_executor" type="set_velocity.py" args="move /controller/move --vx 0 --vy 0 --ay 0 --ax 0 --vz 0 --az 1 --publish_topic /turtle1/cmd_vel" />
+</launch>

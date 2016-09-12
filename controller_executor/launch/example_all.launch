@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- set if we are running executor or monitor-->
+    <arg name="run_executor" default="true"/>
+    <arg name="run_monitor" default="true"/>
+    <arg name="run_executor_button" default="true"/>
+
+    <arg name="example_name" default="simple"/>
+    <arg name="yaml_file" default="$(find controller_executor)/examples/simple/simple.yaml"/>
+    <arg name="slugsin_file" default="/home/catherine/LTLMoP/src/examples/actuations/simple/simple.slugsin"/>
+
+    <!-- simple background  -->
+    <include file="$(find controller_executor)/examples/simple/simple_background.launch" />
+
+    <!-- simple propositions -->
+    <include file="$(find controller_executor)/examples/simple/simple_propositions.launch" />
+
+    <!-- simple executor -->
+    <include file="$(find controller_executor)/examples/simple/simple_executor.launch" if="$(arg run_executor)">
+      <arg name="run_executor_button" default="$(arg run_executor_button)"/>
+      <arg name="run_monitor" value="$(arg run_monitor)"/>
+      <arg name="example_name" value="$(arg example_name)"/>
+      <arg name="yaml_file" value="$(arg yaml_file)"/>
+      <arg name="slugsin_file" value="$(arg slugsin_file)"/>
+    </include>
+
+</launch>

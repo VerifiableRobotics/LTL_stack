@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="run_monitor" default="true"/>
+    <arg name="run_executor_button" default="true"/>
+    <arg name="run_executor_once_started" default="false"/>
+
+
+    <arg name="example_name" default="simple"/>
+    <arg name="yaml_file" default="$(find controller_executor)/examples/simple.yaml"/>
+    <arg name="slugsin_file" default="/home/catherine/LTLMoP/src/examples/actuations/simple/simple.slugsin"/>
+
+    <!--slugs_server-->
+    <group ns="$(arg example_name)">
+        <node name="server" pkg="slugs_ros" type="slugs_startup_server.py"/>
+
+        <!--controller executor -->
+        <node name="executor" pkg="controller_executor" type="executor.py" args="$(arg slugsin_file) --synthesis_options interactiveStrategy --synthesis_options sysInitRoboticsSemantics --synthesis_options cooperativeGR1Strategy --run_executor $(arg run_executor_once_started)" />
+
+        <!-- input manager -->
+        <node name="input_manager" pkg="controller_executor" type="input_manager.py" args="$(arg yaml_file)" />
+
+        <!-- output manager -->
+        <node name="output_manager" pkg="controller_executor" type="output_manager.py" args="$(arg yaml_file)" />
+
+        <!--prop monitor -->
+        <node name="monitor" pkg="controller_executor" type="proposition_monitor.py" if ="$(arg run_monitor)"/>
+
+        <!--pause/run executor button-->
+        <node name="run_executor" pkg="controller_executor" type="tk_button.py" args="run_executor /$(arg example_name)/executor/run_executor --init_value $(arg run_executor_once_started)" if ="$(arg run_executor_button)"/>
+
+    </group>
+
+</launch>

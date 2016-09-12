@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Robot pose -->
+    <arg name="x" default="1.70"/>
+    <arg name="y" default="4.73"/>
+    <arg name="z" default="0"/>
+    <arg name="roll" default="0"/>
+    <arg name="pitch" default="0"/>
+    <arg name="yaw" default="0"/>
+
+    <arg name="delta_x" default="-1.70"/>  <!-- for init offset -->
+    <arg name="delta_y" default="-4.73"/>  <!-- for init offset -->
+    <arg name="delta_yaw" default="0.0"/>
+
+    <arg name="gui" default="true"/>
+
+    <!-- launch gazebo -->
+    <include file="$(find controller_executor)/examples/fullregion_firefighting_fastslow_nav_stack/turtlebot_world.launch">
+        <arg name="world_file" value="worlds/empty.world"/>
+        <arg name="x" value="$(arg x)"/>
+        <arg name="y" value="$(arg y)"/>
+        <arg name="z" value="$(arg z)"/>
+        <arg name="roll" value="$(arg roll)"/>
+        <arg name="pitch" value="$(arg pitch)"/>
+        <arg name="yaw" value="$(arg yaw)"/>
+        <arg name="gui" value="$(arg gui)"/>
+    </include>
+
+    <!-- launch rviz for naviation -->
+    <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch" />
+
+    <!-- navigation stack related -->
+    <!-- fake localization for navigation -->
+    <node pkg="fake_localization" type="fake_localization" name="fake_localization" clear_params="true" output="screen">
+        <remap from="base_pose_ground_truth" to="odom" />
+        <param name="global_frame_id" value="map" />
+        <param name="base_frame_id" value="base_footprint" />
+        <param name="delta_x" value="$(arg delta_x)"/>
+        <param name="delta_y" value="$(arg delta_y)"/>
+        <param name="delta_yaw" value="$(arg delta_yaw)"/>
+    </node>
+
+    <!-- Move base -->
+    <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml"/>
+
+    <!-- broadcast mobile_base pose from gazebo separately -->
+    <node name="mobile_base_pose" pkg="controller_executor" type="forward_pose.py" args="mobile_base_pose /mobile_base/pose mobile_base" />
+
+</launch>

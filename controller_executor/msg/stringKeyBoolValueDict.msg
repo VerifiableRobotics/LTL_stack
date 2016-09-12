@@ -1,0 +1,2 @@
+string[] keys
+bool[] values
