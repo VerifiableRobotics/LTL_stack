@@ -8,7 +8,12 @@ import ConfigParser
 import sys, os
 import time
 
-loggerLevel = "debug"
+loggerLevel = {"controller": "DEBUG", \
+               "input_manager": "DEBUG", \
+               "output_manager": "DEBUG",\
+               "prop_monitor": "DEBUG",\
+               "setup_execution": "DEBUG",\
+               "region_operations": "DEBUG"}
 
 def setupLogging(loggerLevel=None):
     # Set up loggers for printing error messages
@@ -42,7 +47,6 @@ def setupLogging(loggerLevel=None):
                "input_manager": logging.getLogger("input_manager_logger"), \
                "output_manager": logging.getLogger("output_manager_logger"),\
                "prop_monitor": logging.getLogger("prop_monitor_logger"),\
-               "check_resources": logging.getLogger("check_resources_logger"),\
                "setup_execution": logging.getLogger("setup_execution_logger"),\
                "region_operations": logging.getLogger("region_operations_logger")}
 
@@ -69,21 +73,21 @@ def setupLogging(loggerLevel=None):
     #    logging.warning("Could not parse global.cfg file; using defaults")
     #    loggerLevel = "info"
 
-    for logger in loggers.values():
-        if loggerLevel == 'error':
+    for logger_name, logger in loggers.iteritems():
+        if loggerLevel[logger_name].lower() == 'error':
             logger.setLevel(logging.ERROR)
-        elif loggerLevel == 'warning':
+        elif loggerLevel[logger_name].lower() == 'warning':
             logger.setLevel(logging.WARNING)
-        elif loggerLevel == 'info':
+        elif loggerLevel[logger_name].lower() == 'info':
             logger.setLevel(logging.INFO)
-        elif loggerLevel == 'debug':
+        elif loggerLevel[logger_name].lower() == 'debug':
             logger.setLevel(logging.DEBUG)
-        elif loggerLevel == 'notset':
+        elif loggerLevel[logger_name].lower() == 'notset':
             #logger.setLevel(logging.NOTSET)
             # for some reason logging.NOTSET does not work
             logger.setLevel(int(1))
         else:
-            logger.setLevel(int(loggerLevel))
+            logger.setLevel(int(loggerLevel[logger_name]))
 
 # Choose the timer func with maximum accuracy for given platform
 if sys.platform in ['win32', 'cygwin']:
