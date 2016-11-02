@@ -32,12 +32,12 @@ gui_logger = logging.getLogger("gui_logger")
 #command#
 # rqt --standalone rqt_grounding_and_analysis
 
-class MyPlugin(Plugin):
+class PropMappingAndAnalysis(Plugin):
 
     def __init__(self, context):
-        super(MyPlugin, self).__init__(context)
+        super(PropMappingAndAnalysis, self).__init__(context)
         # Give QObjects reasonable names
-        self.setObjectName('MyPlugin')
+        self.setObjectName('MappingAndAnalysisPlugin')
 
         # Process standalone plugin command-line arguments
         from argparse import ArgumentParser
@@ -54,11 +54,11 @@ class MyPlugin(Plugin):
         # Create QWidget
         self._widget = QtGui.QWidget()
         # Get path to UI file which should be in the "resource" folder of this package
-        ui_file = os.path.join(rospkg.RosPack().get_path('rqt_grounding_and_analysis'), 'resource', 'MyPlugin.ui')
+        ui_file = os.path.join(rospkg.RosPack().get_path('rqt_grounding_and_analysis'), 'resource', 'MappingAndAnalysisPlugin.ui')
         # Extend the widget with all attributes and children from UI file
         loadUi(ui_file, self._widget)
         # Give QObjects reasonable names
-        self._widget.setObjectName('MyPluginUi')
+        self._widget.setObjectName('MappingAndAnalysisPluginUi')
         # Show _widget.windowTitle on left-top of each plugin (when 
         # it's set in _widget). This is useful when you open multiple 
         # plugins at once. Also if you open multiple instances of your 
@@ -72,7 +72,7 @@ class MyPlugin(Plugin):
         self._context = context
         ########### CUSTOM CODE ############
 
-        self.example_name = "simple"
+        #self.example_name = "simple"
         #########################
         ####### MAPPING #########
         #########################

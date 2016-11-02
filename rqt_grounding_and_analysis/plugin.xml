@@ -1,7 +1,9 @@
 <library path="src">
-  <class name="My Plugin" type="rqt_grounding_and_analysis.my_module.MyPlugin" base_class_type="rqt_gui_py::Plugin">
+  <class name="Proposition Mapping and Analysis Plugin" type="rqt_grounding_and_analysis.mapping_and_analysis_module.PropMappingAndAnalysis" base_class_type="rqt_gui_py::Plugin">
     <description>
-      An example Python GUI plugin to create a great user interface.
+      This is a Python GUI plugin to:
+      (1) Create mapping between propositions and nodes; and
+      (2) Analyze if there will be low-level access problems among propositions
     </description>
     <qtgui>
       <!-- optional grouping...
@@ -12,9 +14,9 @@
         <label>Subgroup</label>
       </group>
       -->
-      <label>My first Python Plugin</label>
+      <label>Proposition Mapping and Analysis Plugin</label>
       <icon type="theme">system-help</icon>
-      <statustip>Great user interface to provide real value.</statustip>
+      <statustip>Python GUI plugin for proposition mapping and analysis</statustip>
     </qtgui>
   </class>
 </library>
