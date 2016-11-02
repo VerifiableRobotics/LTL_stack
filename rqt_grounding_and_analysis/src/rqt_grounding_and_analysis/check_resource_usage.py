@@ -121,10 +121,14 @@ def chain_output(graph, start, end, prop_dot_to_real_name):
 def get_prop_dot_name_real_name_mapping(nodes_dict):
     prop_dot_to_real_name = {}
     prop_real_to_dot_name = {}
+
+    check_resources_logger.log(4, "nodes_dict: {0}".format(nodes_dict))
+
     for dot_name, dot_name_properties in nodes_dict.iteritems():
         if dot_name_properties[0]['name'] in ['graph']:
             continue
 
+        check_resources_logger.log(4, "prop name: {0}, dot_name_properties[0]['attributes']: {1}".format(dot_name, dot_name_properties[0]['attributes']))
         #check_resources_logger.log(2,dot_name_properties)
         prop_dot_to_real_name[dot_name] = ast.literal_eval(dot_name_properties[0]['attributes']['label'])
         prop_real_to_dot_name[ast.literal_eval(dot_name_properties[0]['attributes']['label'])] = dot_name
@@ -288,7 +292,9 @@ if __name__ == "__main__":
     for input_prop in input_prop_to_ros_info.keys():
 
         # rename prop to the dot file format
-        input_prop_dot_format = "n__"+example_name+'_inputs_'+input_prop.replace("/","_")
+        #input_prop_dot_format = "n__"+example_name+'_inputs_'+input_prop.replace("/","_")
+        input_prop_dot_format = "n__"+"_".join([x for x in input_prop_to_ros_info[input_prop]['node'].split("/") if x])
+
         check_resources_logger.debug("input_prop: {0} to {1}".format(input_prop, input_prop_dot_format))
 
         # recursive subscribed topics
@@ -311,7 +317,9 @@ if __name__ == "__main__":
     for output_prop in output_prop_to_ros_info.keys():
 
         # rename prop to the dot file format
-        output_prop_dot_format = "n__"+example_name+'_outputs_'+output_prop.replace("/","_")
+        #output_prop_dot_format = "n__"+example_name+'_outputs_'+output_prop.replace("/","_")
+        output_prop_dot_format = "n__"+"_".join([x for x in output_prop_dot_format[output_prop]['node'].split("/") if x])
+
         check_resources_logger.debug("input_prop: {0} to {1}".format(output_prop, output_prop_dot_format))
 
         # recursive subscribed topics

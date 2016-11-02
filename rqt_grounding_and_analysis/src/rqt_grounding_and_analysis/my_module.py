@@ -11,7 +11,8 @@ import getpass
 import itertools
 import copy
 import rostopic
-
+import StringIO
+import yaml
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
@@ -141,6 +142,9 @@ class MyPlugin(Plugin):
         # disable analyze conflicts
         self._pushButton_analyze_conflicts.setEnabled(False)
 
+
+        #### tests ###
+
     ###### FUNCTIONS ##########################################################################################################
     #####################################
     ###########  ANALYSIS ###############
@@ -160,6 +164,8 @@ class MyPlugin(Plugin):
         self._pushButton_get_rqt_graph_snapshot.setStyleSheet('QPushButton {background-color: #A3C1DA; color: red; font: bold;}')
         self._pushButton_load_graph_from_file.setStyleSheet("")
 
+        rospy.loginfo("Getting a rosgraph snapshot.")
+
 
     def on_pushButton_load_graph_from_file_clicked(self):
         # second argument is file_type
@@ -173,7 +179,6 @@ class MyPlugin(Plugin):
 
         dot_graph =  pydot.graph_from_dot_file(dot_file)
 
-
         # load dot file
         self.load_dot_graph(dot_graph)
 
@@ -181,6 +186,9 @@ class MyPlugin(Plugin):
         self._pushButton_analyze_conflicts.setEnabled(True)
         self._pushButton_load_graph_from_file.setStyleSheet('QPushButton {background-color: #A3C1DA; color: red; font: bold;}')
         self._pushButton_get_rqt_graph_snapshot.setStyleSheet("")
+
+        rospy.loginfo("Getting rosgraph from a dot file.")
+
 
     def on_pushButton_analyze_conflicts_clicked(self):
         self.populate_table_same_topic()
@@ -193,6 +201,9 @@ class MyPlugin(Plugin):
         self._scrollAreaWidgetContents_Analysis.setMinimumSize(self._tableView_output_to_input.horizontalHeader().length()+20, \
                                                                self._tableView_same_topic.verticalHeader().length()+30+\
                                                                self._tableView_output_to_input.verticalHeader().length()+50+30*2)
+
+        rospy.loginfo("Analyze conflicts.")
+
 
     def populate_ltl_list(self, suggested_ltl_list):
         self._listWidget_ltl.clear()
@@ -258,8 +269,12 @@ class MyPlugin(Plugin):
                 same_topic_table_model.setItem(current_row_count,1,QtGui.QStandardItem(output_prop))
 
                 # chain
+                #chain_str = check_resource_usage.chain_output(self.published_graph,\
+                #    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
+                #    "t_{ros_topic}".format(ros_topic=ros_topic.replace('/','_')),\
+                #    self.prop_dot_to_real_name)
                 chain_str = check_resource_usage.chain_output(self.published_graph,\
-                    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
+                    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
                     "t_{ros_topic}".format(ros_topic=ros_topic.replace('/','_')),\
                     self.prop_dot_to_real_name)
                 same_topic_table_model.setItem(current_row_count,2,QtGui.QStandardItem(chain_str))
@@ -317,9 +332,13 @@ class MyPlugin(Plugin):
                 output_to_input_table_model.setItem(current_row_count,1,QtGui.QStandardItem(input_prop))
 
                 # chain
+                #chain_str = check_resource_usage.chain_output(self.published_graph,\
+                #    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
+                #    "n__{example_name}_inputs_{input_prop}".format(example_name=self.example_name, input_prop=input_prop),\
+                #    self.prop_dot_to_real_name)
                 chain_str = check_resource_usage.chain_output(self.published_graph,\
-                    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
-                    "n__{example_name}_inputs_{input_prop}".format(example_name=self.example_name, input_prop=input_prop),\
+                    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
+                    "n__"+"_".join([x for x in self.input_prop_to_ros_info[input_prop]['node'].split("/") if x]),\
                     self.prop_dot_to_real_name)
                 output_to_input_table_model.setItem(current_row_count,2,QtGui.QStandardItem(chain_str))
 
@@ -339,8 +358,10 @@ class MyPlugin(Plugin):
 
     def load_dot_graph(self, dot_graph):
         # ---- simple ---- #
-        input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
-            '/home/{0}/LTLROS_ws/src/controller_executor/examples/simple/simple.yaml'.format(getpass.getuser()))
+        #self.input_prop_to_ros_info, self.output_prop_to_ros_info = file_operations.loadYAMLFile(\
+        #    '/home/{0}/LTLROS_ws/src/controller_executor/examples/simple/simple.yaml'.format(getpass.getuser()))
+
+        self.input_prop_to_ros_info, self.output_prop_to_ros_info =  self.get_mapping_snapshot()
 
         ##################
         ##### NODES ######
@@ -376,16 +397,16 @@ class MyPlugin(Plugin):
         gui_logger.log(2, "Edges dict:\n {0}".format(str(edges_dict)))
 
         # separate into subscribe topics and publish topics
-        self.input_subscribed_topics = {key: [] for key in input_prop_to_ros_info.keys()}
-        self.input_published_topics = {key: [] for key in input_prop_to_ros_info.keys()}
-        self.output_subscribed_topics = {key: [] for key in output_prop_to_ros_info.keys()}
-        self.output_published_topics = {key: [] for key in output_prop_to_ros_info.keys()}
+        self.input_subscribed_topics = {key: [] for key in self.input_prop_to_ros_info.keys()}
+        self.input_published_topics = {key: [] for key in self.input_prop_to_ros_info.keys()}
+        self.output_subscribed_topics = {key: [] for key in self.output_prop_to_ros_info.keys()}
+        self.output_published_topics = {key: [] for key in self.output_prop_to_ros_info.keys()}
 
         # for storing dotnames
-        self.input_subscribed_dotnames = {key: [] for key in input_prop_to_ros_info.keys()}
-        self.input_published_dotnames = {key: [] for key in input_prop_to_ros_info.keys()}
-        self.output_subscribed_dotnames = {key: [] for key in output_prop_to_ros_info.keys()}
-        self.output_published_dotnames = {key: [] for key in output_prop_to_ros_info.keys()}
+        self.input_subscribed_dotnames = {key: [] for key in self.input_prop_to_ros_info.keys()}
+        self.input_published_dotnames = {key: [] for key in self.input_prop_to_ros_info.keys()}
+        self.output_subscribed_dotnames = {key: [] for key in self.output_prop_to_ros_info.keys()}
+        self.output_published_dotnames = {key: [] for key in self.output_prop_to_ros_info.keys()}
 
         self.published_graph = {}
 
@@ -397,10 +418,11 @@ class MyPlugin(Plugin):
         ###############
         ### inputs ####
         ###############
-        for input_prop in input_prop_to_ros_info.keys():
+        for input_prop in self.input_prop_to_ros_info.keys():
 
             # rename prop to the dot file format
-            input_prop_dot_format = "n__"+self.example_name+'_inputs_'+input_prop.replace("/","_")
+            #input_prop_dot_format = "n__"+self.example_name+'_inputs_'+input_prop.replace("/","_")
+            input_prop_dot_format = "n__"+"_".join([x for x in self.input_prop_to_ros_info[input_prop]['node'].split("/") if x])
             gui_logger.log(1, "input_prop: {0} to {1}".format(input_prop, input_prop_dot_format))
 
             # recursive subscribed topics
@@ -420,10 +442,11 @@ class MyPlugin(Plugin):
         ###############
         ### outputs ###
         ###############
-        for output_prop in output_prop_to_ros_info.keys():
+        for output_prop in self.output_prop_to_ros_info.keys():
 
             # rename prop to the dot file format
-            output_prop_dot_format = "n__"+self.example_name+'_outputs_'+output_prop.replace("/","_")
+            #output_prop_dot_format = "n__"+self.example_name+'_outputs_'+output_prop.replace("/","_")
+            output_prop_dot_format = "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x])
             gui_logger.log(1, "input_prop: {0} to {1}".format(output_prop, output_prop_dot_format))
 
             # recursive subscribed topics
@@ -443,10 +466,6 @@ class MyPlugin(Plugin):
     ###########  MAPPING ################
     #####################################
     def on_pushButton_save_yaml_clicked(self):
-        self.save_mapping()
-
-
-    def save_mapping(self):
         # first get YAML file
         (yaml_file, _) = QtGui.QFileDialog.getSaveFileName(caption="Save mapping to yaml file", directory="/", \
                              filter="YAML file (*.yaml)")
@@ -454,6 +473,33 @@ class MyPlugin(Plugin):
 
         # open YAML file to write
         yamlHandle = open(yaml_file, 'w+')
+
+        self.save_mapping(yamlHandle)
+
+        rospy.loginfo("Saved mapping to yaml file.")
+
+        # close file
+        yamlHandle.close()
+
+
+    def get_mapping_snapshot(self):
+        # get a snapshot of the current mapping
+
+        yamlHandle = StringIO.StringIO()
+
+        self.save_mapping(yamlHandle)
+
+        #gui_logger.debug(yamlHandle.getvalue())
+        try:
+            prop_to_ros_info = yaml.load(yamlHandle.getvalue())
+        except yaml.YAMLError as exc:
+            gui_logger.error("ERROR: {0}".format(exc))
+
+        rospy.loginfo("Got a snapshot of the mapping.")
+        return prop_to_ros_info['inputs'], prop_to_ros_info['outputs']
+
+
+    def save_mapping(self, yamlHandle):
 
         # start with inputs
         yamlHandle.write('inputs:\n')
@@ -467,22 +513,19 @@ class MyPlugin(Plugin):
         for prop in self._output_props:
             self.write_prop_to_yaml(yamlHandle, prop)
 
-        # close file
-        yamlHandle.close()
-
 
     def write_prop_to_yaml(self, yamlHandle, prop):
         # current prop
-        yamlHandle.write('\t{prop}:\n'.format(prop=prop))
+        yamlHandle.write('  {prop}:\n'.format(prop=prop))
 
         #node text box
-        yamlHandle.write('\t\tnode: {0}\n'.format(self._prop_node[prop].currentText()))
+        yamlHandle.write('    node: {0}\n'.format(self._prop_node[prop].currentText()))
 
         #topic for that prop
         if prop in self._input_props:
-            yamlHandle.write('\t\tnode_publish_topic: {0}\n\n'.format(self._prop_topic[prop].currentText()))
+            yamlHandle.write('    node_publish_topic: {0}\n\n'.format(self._prop_topic[prop].currentText()))
         else:
-            yamlHandle.write('\t\tnode_subscribe_topic: {0}\n\n'.format(self._prop_topic[prop].currentText()))
+            yamlHandle.write('    node_subscribe_topic: {0}\n\n'.format(self._prop_topic[prop].currentText()))
 
 
     def populate_grid(self):
@@ -597,7 +640,7 @@ class MyPlugin(Plugin):
             # now update topics
             self.refresh_topics(prop_type, prop, node_combobox)
 
-            rospy.loginfo("Refreshed nodes and topics.")
+        rospy.loginfo("Refreshed nodes and topics.")
 
 
     def refresh_topics(self, prop_type, prop, node_object):
@@ -675,58 +718,58 @@ class MyPlugin(Plugin):
         self._lineEdit_load_yaml_mapping.setText(yaml_file)
 
         # load mapping from file
-        input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(yaml_file)
+        self.input_prop_to_ros_info, self.output_prop_to_ros_info = file_operations.loadYAMLFile(yaml_file)
 
         # set up pernament list of node, topics to add to QComboBox of each prop
         self._mapping_file_node, self._mapping_file_topic = {}, {}
 
         # inputs
-        for input_prop in input_prop_to_ros_info:
+        for input_prop in self.input_prop_to_ros_info:
             if input_prop in self._input_props: # first check if we have such propositions
 
                 #check if node is there
-                if not input_prop_to_ros_info[input_prop]['node'] in \
+                if not self.input_prop_to_ros_info[input_prop]['node'] in \
                 [self._prop_node[input_prop].itemText(i) for i in range(self._prop_node[input_prop].count())]:
-                    self._prop_node[input_prop].addItem(input_prop_to_ros_info[input_prop]['node'])
+                    self._prop_node[input_prop].addItem(self.input_prop_to_ros_info[input_prop]['node'])
 
                 # add this permanently to the QComboBox everytime it's refreshed.
-                self._mapping_file_node[input_prop] = input_prop_to_ros_info[input_prop]['node']
+                self._mapping_file_node[input_prop] = self.input_prop_to_ros_info[input_prop]['node']
 
                 #check if topic is already in combo box
-                if not input_prop_to_ros_info[input_prop]['node_publish_topic'] in \
+                if not self.input_prop_to_ros_info[input_prop]['node_publish_topic'] in \
                 [self._prop_topic[input_prop].itemText(i) for i in range(self._prop_topic[input_prop].count())]:
-                    self._prop_topic[input_prop].addItem(input_prop_to_ros_info[input_prop]['node_publish_topic'])
+                    self._prop_topic[input_prop].addItem(self.input_prop_to_ros_info[input_prop]['node_publish_topic'])
 
                 # add this permanently to the QComboBox everytime it's refreshed.
-                self._mapping_file_topic[input_prop] = input_prop_to_ros_info[input_prop]['node_publish_topic']
+                self._mapping_file_topic[input_prop] = self.input_prop_to_ros_info[input_prop]['node_publish_topic']
 
                 # set current selected text to that from file
-                self._prop_node[input_prop].setCurrentIndex(self._prop_node[input_prop].findText(input_prop_to_ros_info[input_prop]['node']))
-                self._prop_topic[input_prop].setCurrentIndex(self._prop_topic[input_prop].findText(input_prop_to_ros_info[input_prop]['node_publish_topic']))
+                self._prop_node[input_prop].setCurrentIndex(self._prop_node[input_prop].findText(self.input_prop_to_ros_info[input_prop]['node']))
+                self._prop_topic[input_prop].setCurrentIndex(self._prop_topic[input_prop].findText(self.input_prop_to_ros_info[input_prop]['node_publish_topic']))
 
         # outputs
-        for output_prop in output_prop_to_ros_info:
+        for output_prop in self.output_prop_to_ros_info:
             if output_prop in self._output_props: # first check if we have such propositions
 
                 #check if node is there
-                if not output_prop_to_ros_info[output_prop]['node'] in \
+                if not self.output_prop_to_ros_info[output_prop]['node'] in \
                 [self._prop_node[output_prop].itemText(i) for i in range(self._prop_node[output_prop].count())]:
-                    self._prop_node[output_prop].addItem(output_prop_to_ros_info[output_prop]['node'])
+                    self._prop_node[output_prop].addItem(self.output_prop_to_ros_info[output_prop]['node'])
 
                 # add this permanently to the QComboBox everytime it's refreshed.
-                self._mapping_file_node[output_prop] = output_prop_to_ros_info[output_prop]['node']
+                self._mapping_file_node[output_prop] = self.output_prop_to_ros_info[output_prop]['node']
 
                 #check if topic is already in combo box
-                if not output_prop_to_ros_info[output_prop]['node_subscribe_topic'] in \
+                if not self.output_prop_to_ros_info[output_prop]['node_subscribe_topic'] in \
                 [self._prop_topic[output_prop].itemText(i) for i in range(self._prop_topic[output_prop].count())]:
-                    self._prop_topic[output_prop].addItem(output_prop_to_ros_info[output_prop]['node_subscribe_topic'])
+                    self._prop_topic[output_prop].addItem(self.output_prop_to_ros_info[output_prop]['node_subscribe_topic'])
 
                 # add this permanently to the QComboBox everytime it's refreshed.
-                self._mapping_file_topic[output_prop] = output_prop_to_ros_info[output_prop]['node_subscribe_topic']
+                self._mapping_file_topic[output_prop] = self.output_prop_to_ros_info[output_prop]['node_subscribe_topic']
 
                 # set current selected text to that from file
-                self._prop_node[output_prop].setCurrentIndex(self._prop_node[output_prop].findText(output_prop_to_ros_info[output_prop]['node']))
-                self._prop_topic[output_prop].setCurrentIndex(self._prop_topic[output_prop].findText(output_prop_to_ros_info[output_prop]['node_subscribe_topic']))
+                self._prop_node[output_prop].setCurrentIndex(self._prop_node[output_prop].findText(self.output_prop_to_ros_info[output_prop]['node']))
+                self._prop_topic[output_prop].setCurrentIndex(self._prop_topic[output_prop].findText(self.output_prop_to_ros_info[output_prop]['node_subscribe_topic']))
 
         rospy.loginfo("Loaded Mapping.")
 
@@ -783,6 +826,7 @@ class MyPlugin(Plugin):
         self._pushButton_load_yaml_mapping.setEnabled(True)
 
         rospy.loginfo("Loaded propositions.")
+
 
     def on_pushButton_refresh_clicked(self):
         # refresh nodes and topics

@@ -9,13 +9,13 @@ def get_current_rqt_graph_to_dotcode():
     # starting at line 229 of ros_graph.py
     ns_filter = '/'
     topic_filter = '/'
-    graph_mode = 'node_topic_all'
+    graph_mode = 'node_topic_all' # (Nodes/Topics(all))
     orientation = 'LR'
     namespace_cluster = 1
 
-    accumulate_actions = True
-    hide_dead_end_topics = True
-    hide_single_connection_topics = True
+    accumulate_actions = True # (Group: (Actions))
+    hide_dead_end_topics = False #True # (Dead sinks)
+    hide_single_connection_topics = False #True (Leaf Topics)
     quiet = True
     dotcode_factory = PydotFactory()
 
