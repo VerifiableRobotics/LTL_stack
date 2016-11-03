@@ -57,7 +57,8 @@ def create_proposition_launch_file(yaml_file, launch_file, example_name):
     # form proposition launch file from yaml file
     import file_operations
     input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(yaml_file)
-    file_operations.create_launch_file(launch_file, example_name, input_prop_to_ros_info, output_prop_to_ros_info)
+    #file_operations.create_launch_file(launch_file, example_name, input_prop_to_ros_info, output_prop_to_ros_info)
+    file_operations.create_launch_file_by_namespaces(launch_file, example_name, input_prop_to_ros_info, output_prop_to_ros_info)
 
 
 def update_arguments(tree_root_obj, example_name, yaml_file, slugsin_file):
