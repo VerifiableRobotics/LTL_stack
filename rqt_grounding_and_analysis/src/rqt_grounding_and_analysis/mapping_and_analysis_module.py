@@ -71,8 +71,8 @@ class PropMappingAndAnalysis(Plugin):
 
         self._context = context
         ########### CUSTOM CODE ############
+        self._widget.resizeEvent = self.onResize
 
-        #self.example_name = "simple"
         #########################
         ####### MAPPING #########
         #########################
@@ -146,13 +146,45 @@ class PropMappingAndAnalysis(Plugin):
         #### tests ###
 
     ###### FUNCTIONS ##########################################################################################################
+    #####################
+    ##### RESIZE ########
+    #####################
+    def onResize(self, event):
+        # mutual exclusions resize
+        self._tableView_same_topic.setMinimumSize(self._widget.width()-100, \
+                                                  self._tableView_same_topic.verticalHeader().length()+50)
+        self._tableView_same_topic.resizeRowsToContents()
+        self._tableView_same_topic.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self._tableView_same_topic.setMinimumSize(self._widget.width()-100, \
+                                                  self._tableView_same_topic.verticalHeader().length()+50)
+
+        # output to input resize
+        self._tableView_output_to_input.setMinimumSize(self._widget.width()-100,\
+                                                       self._tableView_output_to_input.verticalHeader().length()+50)
+        self._tableView_output_to_input.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+        self._tableView_output_to_input.resizeRowsToContents()
+        self._tableView_output_to_input.setMinimumSize(self._widget.width()-100,\
+                                                       self._tableView_output_to_input.verticalHeader().length()+50)
+        gui_logger.log(2, 'length_tableView_same_topic:{0} length_tableView_output_to_input:{1}'.format(\
+                                                        self._tableView_same_topic.verticalHeader().length(),\
+                                                        self._tableView_output_to_input.verticalHeader().length()))
+
+        # reset tab size
+        length1 = self._tableView_same_topic.verticalHeader().length() if self._tableView_same_topic.verticalHeader().length() else 80
+        length2 = self._tableView_output_to_input.verticalHeader().length() if self._tableView_output_to_input.verticalHeader().length() else 80
+        self._scrollAreaWidgetContents_Analysis.setMinimumSize(self._widget.width()-60, \
+                                                                100+ length1 + length2)
+
+        gui_logger.log(2,'length_scrollAreaWidgetContents_Analysis:{0}'.format(self._tableView_same_topic.verticalHeader().length() +\
+                                       self._tableView_output_to_input.verticalHeader().length()))
+
     #####################################
     ###########  ANALYSIS ###############
     #####################################
     def on_pushButton_get_rqt_graph_snapshot_clicked(self):
         dot_data = rosgraph_operations.get_current_rqt_graph_to_dotcode()
 
-        gui_logger.log(2, dot_data)
+        gui_logger.log(2, 'dot_data: {0}'.format(dot_data))
 
         # load dot file
         dot_graph =  pydot.graph_from_dot_data(dot_data)
@@ -198,9 +230,10 @@ class PropMappingAndAnalysis(Plugin):
         self.populate_output_to_input()
 
         # reset tab size
-        self._scrollAreaWidgetContents_Analysis.setMinimumSize(self._tableView_output_to_input.horizontalHeader().length()+20, \
-                                                               self._tableView_same_topic.verticalHeader().length()+30+\
-                                                               self._tableView_output_to_input.verticalHeader().length()+50+30*2)
+        length1 = self._tableView_same_topic.verticalHeader().length() if self._tableView_same_topic.verticalHeader().length() else 80
+        length2 = self._tableView_output_to_input.verticalHeader().length() if self._tableView_output_to_input.verticalHeader().length() else 80
+        self._scrollAreaWidgetContents_Analysis.setMinimumSize(self._widget.width()-60, \
+                                                                100+ length1 + length2)
 
         rospy.loginfo("Analyze conflicts.")
 
@@ -241,13 +274,12 @@ class PropMappingAndAnalysis(Plugin):
         same_topic_table_model.setHorizontalHeaderItem(1, QtGui.QStandardItem("Output"))
         same_topic_table_model.setHorizontalHeaderItem(2, QtGui.QStandardItem("Output-to-Topic Chain"))
 
-        self._tableView_same_topic.horizontalHeader().resizeSection(0, 120) # Topic
+        self._tableView_same_topic.horizontalHeader().resizeSection(0, 150) # Topic
         self._tableView_same_topic.horizontalHeader().resizeSection(1, 120) # Output
-        #self._tableView_same_topic.resizeColumnsToContents()
 
         # check access
         same_output_dict = check_resource_usage.check_possible_concurrent_topic_access(\
-            self.output_published_topics)
+            self.output_published_topics['exclude_props'])
 
         gui_logger.log(1, 'self.published_graph: {0}'.format(self.published_graph))
         self.suggested_ltl_list = []
@@ -257,8 +289,8 @@ class PropMappingAndAnalysis(Plugin):
         for ros_topic, output_list in same_output_dict.iteritems():
             input_count = 0 # trak no of inputs for this output
 
-            # set first column ros_topic
-            same_topic_table_model.setItem(current_row_count,0,QtGui.QStandardItem(ros_topic))
+            # set first column ros_topic (also break topic into parts to show everything in table)
+            same_topic_table_model.setItem(current_row_count,0,QtGui.QStandardItem(ros_topic.replace('/',' /').replace('_','_ ')))
 
             # convert two-item-list to a full list
             output_full_list = list(set(list(itertools.chain(*output_list))))
@@ -273,11 +305,24 @@ class PropMappingAndAnalysis(Plugin):
                 #    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
                 #    "t_{ros_topic}".format(ros_topic=ros_topic.replace('/','_')),\
                 #    self.prop_dot_to_real_name)
-                chain_str = check_resource_usage.chain_output(self.published_graph,\
-                    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
-                    "t_{ros_topic}".format(ros_topic=ros_topic.replace('/','_')),\
-                    self.prop_dot_to_real_name)
+                #chain_str = check_resource_usage.chain_output(self.published_graph,\
+                #    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
+                #    "t_{ros_topic}".format(ros_topic=ros_topic.replace('/','_')),\
+                #    self.prop_dot_to_real_name)
+                prop_to_topic_list = self.chain_topic_node_dotnames_published_dict['exclude_props'][output_prop][self.prop_real_to_dot_name['t'][ros_topic]]
+                chain_str_list = []
+                # node and topic
+                for prop_dot_name in prop_to_topic_list:
+                    if prop_dot_name.startswith('n'): # node
+                        chain_str_list.append('('+self.prop_dot_to_real_name[prop_dot_name]+')')
+                    else: # topic
+                        #gui_logger.log(4, prop_dot_name)
+                        chain_str_list.append('['+self.prop_dot_to_real_name[prop_dot_name]+']')
+                chain_str  = " -> ".join(chain_str_list)
+
                 same_topic_table_model.setItem(current_row_count,2,QtGui.QStandardItem(chain_str))
+                gui_logger.log(6, 'self.output_published_dotnames[exclude_props][output_prop]: {0}'.format(self.output_published_dotnames['exclude_props'][output_prop]))
+                gui_logger.log(8, 'chain_str: {0}'.format(chain_str))
 
                 current_row_count += 1
                 input_count += 1
@@ -292,13 +337,12 @@ class PropMappingAndAnalysis(Plugin):
         # resize tableview
         #self._tableView_same_topic.setWordWrap(True)
         #self._tableView_same_topic.resizeRowsToContents()
-        #self._tableView_same_topic.horizontalHeader().resizeSection(2, 320) # Output
         self._tableView_same_topic.horizontalHeader().setStretchLastSection(True)
-        self._tableView_same_topic.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
-        # resize tableview
-        self._tableView_same_topic.setMaximumSize(self._tableView_same_topic.horizontalHeader().length(),\
-                                                  self._tableView_same_topic.verticalHeader().length()+30)
+        # resize tableview #self._tableView_same_topic.horizontalHeader().length()
+        self._tableView_same_topic.setMinimumSize(self._widget.width()-100, \
+                                                  self._tableView_same_topic.verticalHeader().length()+50)
+        self._tableView_same_topic.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
 
         gui_logger.info("Suggested LTL: {0}".format(self.suggested_ltl_list))
@@ -315,10 +359,9 @@ class PropMappingAndAnalysis(Plugin):
 
         self._tableView_output_to_input.horizontalHeader().resizeSection(0, 120)
         self._tableView_output_to_input.horizontalHeader().resizeSection(1, 120)
-        #self._tableView_output_to_input.resizeColumnsToContents()
 
         output_to_input_dict = check_resource_usage.check_possible_action_affected_sensors(\
-            self.input_subscribed_topics, self.output_published_topics)
+            self.input_subscribed_topics['include_props'], self.output_published_topics['include_props'])
 
         current_row_count = 0 # track no of rows
         for output_prop, input_list in output_to_input_dict.iteritems():
@@ -336,10 +379,22 @@ class PropMappingAndAnalysis(Plugin):
                 #    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
                 #    "n__{example_name}_inputs_{input_prop}".format(example_name=self.example_name, input_prop=input_prop),\
                 #    self.prop_dot_to_real_name)
-                chain_str = check_resource_usage.chain_output(self.published_graph,\
-                    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
-                    "n__"+"_".join([x for x in self.input_prop_to_ros_info[input_prop]['node'].split("/") if x]),\
-                    self.prop_dot_to_real_name)
+                #chain_str = check_resource_usage.chain_output(self.published_graph,\
+                #    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
+                #    "n__"+"_".join([x for x in self.input_prop_to_ros_info[input_prop]['node'].split("/") if x]),\
+                #    self.prop_dot_to_real_name)
+                input_node_name = self.prop_real_to_dot_name['n'][self.input_prop_to_ros_info[input_prop]['node']]
+                gui_logger.log(4,self.chain_topic_node_dotnames_published_dict['include_props'][output_prop])
+                prop_to_node_list = self.chain_topic_node_dotnames_published_dict['include_props'][output_prop][input_node_name]
+                chain_str_list = []
+                # node and topic
+                for prop_dot_name in prop_to_node_list:
+                    if prop_dot_name.startswith('n'): # node
+                        chain_str_list.append('('+self.prop_dot_to_real_name[prop_dot_name]+')')
+                    else: # topic
+                        chain_str_list.append('['+self.prop_dot_to_real_name[prop_dot_name]+']')
+                chain_str  = " -> ".join(chain_str_list)
+
                 output_to_input_table_model.setItem(current_row_count,2,QtGui.QStandardItem(chain_str))
 
                 current_row_count += 1
@@ -350,25 +405,25 @@ class PropMappingAndAnalysis(Plugin):
 
         # resize tableview
         self._tableView_output_to_input.horizontalHeader().setStretchLastSection(True)
+
+        # resize tableview # self._tableView_output_to_input.horizontalHeader().length()
+        self._tableView_output_to_input.setMinimumSize(self._widget.width()-100, \
+                                                  self._tableView_output_to_input.verticalHeader().length()+50)
         self._tableView_output_to_input.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
-        # resize tableview
-        self._tableView_output_to_input.setMaximumSize(self._tableView_output_to_input.horizontalHeader().length(),\
-                                                       self._tableView_output_to_input.verticalHeader().length()+50)
-
     def load_dot_graph(self, dot_graph):
-        # ---- simple ---- #
-        #self.input_prop_to_ros_info, self.output_prop_to_ros_info = file_operations.loadYAMLFile(\
-        #    '/home/{0}/LTLROS_ws/src/controller_executor/examples/simple/simple.yaml'.format(getpass.getuser()))
-
         self.input_prop_to_ros_info, self.output_prop_to_ros_info =  self.get_mapping_snapshot()
 
-        ##################
-        ##### NODES ######
-        ##################
+        ##################  #################
+        ##### NODES ######  ###### EDGES ####
+        ##################  #################
         #first grab all the nodes (both n__ and t__)
-        nodes_dict = {}
+        nodes_dict, edges_dict = {}, {}
         for subgraph_name, subgraph in dot_graph.obj_dict['subgraphs'].iteritems():
+            #check_resources_logger.debug("subgraph_name: {0}, length of subgraph: {1}".format(subgraph_name, len(subgraph)))
+            #check_resources_logger.log(8, "subgraph[0] keys: {0}".format(subgraph[0].keys()))
+
+            # add in nodes
             for node_id, node in subgraph[0]['nodes'].iteritems():
                 #if len(node) != 1:
                 #    check_resources_logger.warning("Length of nodes is longer than 1!")
@@ -376,8 +431,22 @@ class PropMappingAndAnalysis(Plugin):
                 #else:
                 #    nodes_dict[node_id] = node[0]
 
+            # add in edges:
+            for edge_id, edge in subgraph[0]['edges'].iteritems():
+                edges_dict[edge_id] = edge
+                #check_resources_logger.log(6, "edge_id: {0}, edge:{1}".format(edge_id, edge))
+
+
+        #############################
+        #### MORE NODES AND EDGES ###
+        #############################
         # also join in obj_dict['nodes']
         nodes_dict.update(dot_graph.obj_dict["nodes"])
+        gui_logger.log(2, "Nodes dict:\n {0}".format(str(nodes_dict)))
+
+        #  also join in obj_dict['edges']
+        edges_dict.update(dot_graph.obj_dict['edges'])
+        gui_logger.log(2,"Edges dict:\n {0}".format(str(edges_dict)))
 
         #########################
         ## DOT TO REAL MAPPING ##
@@ -389,31 +458,47 @@ class PropMappingAndAnalysis(Plugin):
         gui_logger.log(4, "self.prop_real_to_dot_name:\n {0}".format(str(self.prop_real_to_dot_name)))
 
 
-        ##################
-        ##### Edges ######
-        ##################
-        # get edges list
-        edges_dict = dot_graph.obj_dict['edges']
-        gui_logger.log(2, "Edges dict:\n {0}".format(str(edges_dict)))
-
         # separate into subscribe topics and publish topics
-        self.input_subscribed_topics = {key: [] for key in self.input_prop_to_ros_info.keys()}
-        self.input_published_topics = {key: [] for key in self.input_prop_to_ros_info.keys()}
-        self.output_subscribed_topics = {key: [] for key in self.output_prop_to_ros_info.keys()}
-        self.output_published_topics = {key: [] for key in self.output_prop_to_ros_info.keys()}
-
+        self.input_subscribed_topics = {'include_props':{key: [] for key in self.input_prop_to_ros_info.keys()}, \
+                                        'exclude_props':{key: [] for key in self.input_prop_to_ros_info.keys()}}
+        self.input_published_topics = {'include_props':{key: [] for key in self.input_prop_to_ros_info.keys()}, \
+                                       'exclude_props':{key: [] for key in self.input_prop_to_ros_info.keys()}}
+        self.output_subscribed_topics = {'include_props':{key: [] for key in self.output_prop_to_ros_info.keys()}, \
+                                         'exclude_props':{key: [] for key in self.output_prop_to_ros_info.keys()}}
+        self.output_published_topics = {'include_props':{key: [] for key in self.output_prop_to_ros_info.keys()}, \
+                                        'exclude_props':{key: [] for key in self.output_prop_to_ros_info.keys()}}
         # for storing dotnames
-        self.input_subscribed_dotnames = {key: [] for key in self.input_prop_to_ros_info.keys()}
-        self.input_published_dotnames = {key: [] for key in self.input_prop_to_ros_info.keys()}
-        self.output_subscribed_dotnames = {key: [] for key in self.output_prop_to_ros_info.keys()}
-        self.output_published_dotnames = {key: [] for key in self.output_prop_to_ros_info.keys()}
+        self.input_subscribed_dotnames = {'include_props':{key: [] for key in self.input_prop_to_ros_info.keys()}, \
+                                          'exclude_props':{key: [] for key in self.input_prop_to_ros_info.keys()}}
+        self.input_published_dotnames = {'include_props':{key: [] for key in self.input_prop_to_ros_info.keys()}, \
+                                        'exclude_props':{key: [] for key in self.input_prop_to_ros_info.keys()}}
+        self.output_subscribed_dotnames = {'include_props':{key: [] for key in self.output_prop_to_ros_info.keys()}, \
+                                        'exclude_props':{key: [] for key in self.output_prop_to_ros_info.keys()}}
+        self.output_published_dotnames = {'include_props':{key: [] for key in self.output_prop_to_ros_info.keys()}, \
+                                        'exclude_props':{key: [] for key in self.output_prop_to_ros_info.keys()}}
+
+        self.chain_topic_node_dotnames_subscribed_dict = {'include_props':{key: {} for key in self.input_prop_to_ros_info.keys()+\
+                                                                  self.output_prop_to_ros_info.keys()}, \
+                                                          'exclude_props':{key: {} for key in self.input_prop_to_ros_info.keys()+\
+                                                                  self.output_prop_to_ros_info.keys()}}
+        self.chain_topic_node_dotnames_published_dict = {'include_props':{key: {} for key in self.input_prop_to_ros_info.keys()+\
+                                                                  self.output_prop_to_ros_info.keys()}, \
+                                                          'exclude_props':{key: {} for key in self.input_prop_to_ros_info.keys()+\
+                                                                  self.output_prop_to_ros_info.keys()}}
 
         self.published_graph = {}
 
         ####################################
         # filter some of the common topics #
         ####################################
-        topic_filtered_list = ['/clock','/statistics', '/rosout']
+        topic_filtered_list = ['/clock','/statistics', '/rosout']#, '/rviz', '/map']
+
+        #modify topic filtered list to filter other proposition nodes
+        prop_topic_filtered_list = topic_filtered_list + \
+                                    [self.input_prop_to_ros_info[x]['node'] for x in self.input_prop_to_ros_info.keys()] + \
+                                    [self.input_prop_to_ros_info[x]['node_publish_topic'] for x in self.input_prop_to_ros_info.keys()] + \
+                                    [self.output_prop_to_ros_info[x]['node'] for x in self.output_prop_to_ros_info.keys()] + \
+                                    [self.output_prop_to_ros_info[x]['node_subscribe_topic'] for x in self.output_prop_to_ros_info.keys()]
 
         ###############
         ### inputs ####
@@ -425,14 +510,27 @@ class PropMappingAndAnalysis(Plugin):
             input_prop_dot_format = "n__"+"_".join([x for x in self.input_prop_to_ros_info[input_prop]['node'].split("/") if x])
             gui_logger.log(1, "input_prop: {0} to {1}".format(input_prop, input_prop_dot_format))
 
-            # recursive subscribed topics
-            check_resource_usage.get_subscribed_topics(input_prop_dot_format, self.input_subscribed_dotnames[input_prop], \
-                                  self.input_subscribed_topics[input_prop], edges_dict, nodes_dict, topic_filtered_list)
+            # recursive subscribed topics include props
+            check_resource_usage.get_subscribed_topics(input_prop_dot_format, self.input_subscribed_dotnames['include_props'][input_prop], \
+                                  self.input_subscribed_topics['include_props'][input_prop], edges_dict, nodes_dict, \
+                                  [input_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['include_props'], input_prop, topic_filtered_list)
 
-            # recursive published topics
-            check_resource_usage.get_published_topics(input_prop_dot_format, self.input_published_dotnames[input_prop], \
-                                 self.input_published_topics[input_prop], edges_dict, nodes_dict, topic_filtered_list)
+            # recursive published topics include props
+            check_resource_usage.get_published_topics(input_prop_dot_format, self.input_published_dotnames['include_props'][input_prop], \
+                                 self.input_published_topics['include_props'][input_prop], edges_dict, nodes_dict, \
+                                 [input_prop_dot_format], self.chain_topic_node_dotnames_published_dict['include_props'], input_prop, topic_filtered_list)
 
+            # recursive subscribed topics exclude props
+            check_resource_usage.get_subscribed_topics(input_prop_dot_format, self.input_subscribed_dotnames['exclude_props'][input_prop], \
+                                  self.input_subscribed_topics['exclude_props'][input_prop], edges_dict, nodes_dict, \
+                                  [input_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['exclude_props'], \
+                                  input_prop, prop_topic_filtered_list)
+
+            # recursive published topics exclude props
+            check_resource_usage.get_published_topics(input_prop_dot_format, self.input_published_dotnames['exclude_props'][input_prop], \
+                                 self.input_published_topics['exclude_props'][input_prop], edges_dict, nodes_dict, \
+                                 [input_prop_dot_format], self.chain_topic_node_dotnames_published_dict['exclude_props'], \
+                                 input_prop, prop_topic_filtered_list)
 
         gui_logger.log(4, "self.input_subscribed_topics: {0}".format(str(self.input_subscribed_topics)))
         gui_logger.log(4, "self.input_published_topics: {0}".format(str(self.input_published_topics)))
@@ -449,18 +547,39 @@ class PropMappingAndAnalysis(Plugin):
             output_prop_dot_format = "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x])
             gui_logger.log(1, "input_prop: {0} to {1}".format(output_prop, output_prop_dot_format))
 
-            # recursive subscribed topics
-            check_resource_usage.get_subscribed_topics(output_prop_dot_format, self.output_subscribed_dotnames[output_prop], \
-                                  self.output_subscribed_topics[output_prop], edges_dict, nodes_dict, topic_filtered_list)
+            # recursive subscribed topics include props
+            check_resource_usage.get_subscribed_topics(output_prop_dot_format, self.output_subscribed_dotnames['include_props'][output_prop], \
+                                  self.output_subscribed_topics['include_props'][output_prop], edges_dict, nodes_dict, \
+                                  [output_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['include_props'], \
+                                  output_prop, topic_filtered_list)
 
-            # recursive published topics
-            check_resource_usage.get_published_topics(output_prop_dot_format, self.output_published_dotnames[output_prop], \
-                                 self.output_published_topics[output_prop], edges_dict, nodes_dict, topic_filtered_list)
+            # recursive published topics include props
+            check_resource_usage.get_published_topics(output_prop_dot_format, self.output_published_dotnames['include_props'][output_prop], \
+                                 self.output_published_topics['include_props'][output_prop], edges_dict, nodes_dict, \
+                                 [output_prop_dot_format], self.chain_topic_node_dotnames_published_dict['include_props'], \
+                                 output_prop, topic_filtered_list)
+
+            # recursive subscribed topics exclude props
+            check_resource_usage.get_subscribed_topics(output_prop_dot_format, self.output_subscribed_dotnames['exclude_props'][output_prop], \
+                                  self.output_subscribed_topics['exclude_props'][output_prop], edges_dict, nodes_dict, \
+                                  [output_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['exclude_props'], \
+                                  output_prop, prop_topic_filtered_list)
+
+            # recursive published topics exclude props
+            check_resource_usage.get_published_topics(output_prop_dot_format, self.output_published_dotnames['exclude_props'][output_prop], \
+                                self.output_published_topics['exclude_props'][output_prop], edges_dict, nodes_dict, \
+                                 [output_prop_dot_format], self.chain_topic_node_dotnames_published_dict['exclude_props'], \
+                                 output_prop, prop_topic_filtered_list)
 
 
-            check_resource_usage.get_published_graph(output_prop_dot_format, self.output_subscribed_dotnames[output_prop], \
-                                    self.published_graph, edges_dict, nodes_dict, topic_filtered_list)
+            #check_resource_usage.get_published_graph(output_prop_dot_format, self.output_subscribed_dotnames[output_prop], \
+            #                        self.published_graph, edges_dict, nodes_dict, topic_filtered_list)
+
         #rospy.loginfo("Published topics - bedroom: {0}".format(self.output_published_topics['bedroom']))
+
+        #gui_logger.log(4, 'self.chain_topic_node_dotnames_subscribed_dict: {0}'.format(self.chain_topic_node_dotnames_subscribed_dict))
+        #gui_logger.log(4, 'self.chain_topic_node_dotnames_published_dict: {0}'.format(self.chain_topic_node_dotnames_published_dict))
+
 
     #####################################
     ###########  MAPPING ################
@@ -811,9 +930,9 @@ class PropMappingAndAnalysis(Plugin):
                 break
 
             # add to list
-            if line and mode == "input":
+            if line and mode == "input" and not line.startswith('#'):
                 self._input_props.append(line)
-            elif line and mode == "output":
+            elif line and mode == "output" and not line.startswith('#'):
                 self._output_props.append(line)
 
         # populate input and output grids
