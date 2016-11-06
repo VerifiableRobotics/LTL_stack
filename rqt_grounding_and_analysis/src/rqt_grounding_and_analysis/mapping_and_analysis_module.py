@@ -121,11 +121,21 @@ class PropMappingAndAnalysis(Plugin):
         self._tableView_same_topic= self._widget.findChild(QtGui.QTableView, name="tableView_same_topic")
         self._tableView_output_to_input= self._widget.findChild(QtGui.QTableView, name="tableView_output_to_input")
 
+        self._tableView_same_topic.verticalHeader().setVisible(False)
+        self._tableView_output_to_input.verticalHeader().setVisible(False)
+
         self._verticalLayout_sub_analysis = self._widget.findChild(QtGui.QVBoxLayout, name="verticalLayout_sub_analysis")
 
         self._scrollAreaWidgetContents_Analysis = self._widget.findChild(QtGui.QWidget, name="scrollAreaWidgetContents_Analysis")
 
-        self._listWidget_ltl = self._widget.findChild(QtGui.QListWidget, name="listWidget_ltl")
+        self._textEdit_ltl = self._widget.findChild(QtGui.QTextEdit, name="textEdit_ltl")
+
+        # combo box for displaying ltl options
+        self._comboBox_ltl_options = self._widget.findChild(QtGui.QComboBox, name='comboBox_ltl_options')
+        # fill up ltl after combo box is selected
+        self.connect(self._comboBox_ltl_options, QtCore.SIGNAL("activated(const QString&)"), \
+                     partial(self.refresh_ltl_text_edit))
+        self._comboBox_ltl_options.addItems(['Structured English','LTL'])  # add options
 
         # connect callback for pushButton analyze_conflicts
         self._pushButton_analyze_conflicts = self._widget.findChild(QtGui.QPushButton, name="pushButton_analyze_conflicts")
@@ -139,11 +149,43 @@ class PropMappingAndAnalysis(Plugin):
         self._pushButton_get_rqt_graph_snapshot = self._widget.findChild(QtGui.QPushButton, name="pushButton_get_rqt_graph_snapshot")
         self._pushButton_get_rqt_graph_snapshot.clicked.connect(self.on_pushButton_get_rqt_graph_snapshot_clicked)
 
+        # combo box for displaying exclusion topics
+        self._comboBox_select_exclusion_topic = self._widget.findChild(QtGui.QComboBox, name='comboBox_select_exclusion_topic')
+        # fill up ltl after combo box is selected
+        self.connect(self._comboBox_select_exclusion_topic, QtCore.SIGNAL("activated(const QString&)"), \
+                     partial(self.refresh_exclusion_ltl_and_table_selection))
+
+        self._tableView_same_topic.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)   # set selection mode
+        self.same_topic_table_model = None
+        self.same_output_table_layout = {} #'rostopic': [first row, last row]
+
         # disable analyze conflicts
         self._pushButton_analyze_conflicts.setEnabled(False)
 
-
         #### tests ###
+
+    def refresh_exclusion_ltl_and_table_selection(self):
+        #first check if there are rows and columns in the table:
+        gui_logger.debug("Same Topic Table Row count: {0}".format(self.same_topic_table_model.rowCount()))
+        if self.same_topic_table_model.rowCount():
+            # deselect old one before new ones
+            self._tableView_same_topic.clearSelection()
+
+            #highlight in table
+            starting_row = self.same_output_table_layout[self._comboBox_select_exclusion_topic.currentText()][0]
+            ending_row = self.same_output_table_layout[self._comboBox_select_exclusion_topic.currentText()][1]
+            row_count = ending_row - starting_row
+            gui_logger.log(4, self.same_output_table_layout[self._comboBox_select_exclusion_topic.currentText()])
+            for idx in range(row_count):
+                self._tableView_same_topic.selectRow(starting_row+idx)
+
+            # populate ltl
+            self.populate_ltl_text_edit(self._comboBox_select_exclusion_topic.currentIndex(), self.suggested_ltl_list, self.suggested_structured_eng_list)
+
+            # set view current cell
+            if self.same_topic_table_model:
+                modelIndex =  self.same_topic_table_model.index(starting_row, 0, QtCore.QModelIndex())
+                self._tableView_same_topic.scrollTo(modelIndex, QtGui.QAbstractItemView.PositionAtTop)
 
     ###### FUNCTIONS ##########################################################################################################
     #####################
@@ -151,6 +193,8 @@ class PropMappingAndAnalysis(Plugin):
     #####################
     def onResize(self, event):
         # mutual exclusions resize
+        pass
+        """
         self._tableView_same_topic.setMinimumSize(self._widget.width()-100, \
                                                   self._tableView_same_topic.verticalHeader().length()+50)
         self._tableView_same_topic.resizeRowsToContents()
@@ -177,7 +221,7 @@ class PropMappingAndAnalysis(Plugin):
 
         gui_logger.log(2,'length_scrollAreaWidgetContents_Analysis:{0}'.format(self._tableView_same_topic.verticalHeader().length() +\
                                        self._tableView_output_to_input.verticalHeader().length()))
-
+        """
     #####################################
     ###########  ANALYSIS ###############
     #####################################
@@ -225,26 +269,46 @@ class PropMappingAndAnalysis(Plugin):
     def on_pushButton_analyze_conflicts_clicked(self):
         self.populate_table_same_topic()
 
-        self.populate_ltl_list(self.suggested_ltl_list)
+        self.populate_exlusion_combo_box()
+
+        self.populate_ltl_text_edit(self._comboBox_select_exclusion_topic.currentIndex(), self.suggested_ltl_list, self.suggested_structured_eng_list)
 
         self.populate_output_to_input()
 
         # reset tab size
         length1 = self._tableView_same_topic.verticalHeader().length() if self._tableView_same_topic.verticalHeader().length() else 80
         length2 = self._tableView_output_to_input.verticalHeader().length() if self._tableView_output_to_input.verticalHeader().length() else 80
-        self._scrollAreaWidgetContents_Analysis.setMinimumSize(self._widget.width()-60, \
-                                                                100+ length1 + length2)
+        #self._scrollAreaWidgetContents_Analysis.setMinimumSize(self._widget.width()-60, \
+        #                                                        100+ length1 + length2)
 
         rospy.loginfo("Analyze conflicts.")
 
+    def populate_exlusion_combo_box(self):
+        self._comboBox_select_exclusion_topic.clear() # clear all options before updating
 
-    def populate_ltl_list(self, suggested_ltl_list):
-        self._listWidget_ltl.clear()
+        self._comboBox_select_exclusion_topic.addItems(self.same_output_table_layout.keys()) # update
 
-        for idx,ltl_str in enumerate(suggested_ltl_list):
-            ltl_item = QtGui.QListWidgetItem(ltl_str)
-            self._listWidget_ltl.insertItem(idx, ltl_item)
+        self.refresh_exclusion_ltl_and_table_selection()
 
+    def populate_ltl_text_edit(self, idx, suggested_ltl_list, suggested_structured_eng_list):
+        if suggested_ltl_list:
+            #self._listWidget_ltl.clear()
+            gui_logger.debug('idx: {0}, suggested_ltl_list: {1}'.format(idx, suggested_ltl_list))
+            #ltl_item = QtGui.QListWidgetItem(suggested_ltl_list[idx])
+            #self._listWidget_ltl.insertItem(0, ltl_item)
+
+            #ltl or structured eng
+            if self._comboBox_ltl_options.currentText() == 'LTL':
+                self._textEdit_ltl.clear()
+                self._textEdit_ltl.setText(suggested_ltl_list[idx])
+            else:
+                self._textEdit_ltl.clear()
+                self._textEdit_ltl.setText(suggested_structured_eng_list[idx])
+        else:
+            self._textEdit_ltl.clear()
+
+    def refresh_ltl_text_edit(self):
+        self.populate_ltl_text_edit(self._comboBox_select_exclusion_topic.currentIndex(), self.suggested_ltl_list, self.suggested_structured_eng_list)
 
     def get_ltl_suggestion(self, output_full_list):
         full_ltl_list = []
@@ -259,20 +323,26 @@ class PropMappingAndAnalysis(Plugin):
         full_ltl_list.append(temp_list)
 
         # form ltl string
-        ltl_str = "always ("+ " or ".join("("+" and ".join(prop for prop in prop_list)+")" for prop_list in full_ltl_list)+")"
+        structured_eng_str = "always ("+ " or ".join("("+" and ".join(prop for prop in prop_list)+")" for prop_list in full_ltl_list)+")"
+        ltl_str = "[] ("+ " | ".join("("+" & ".join(prop.replace('not', '!') for prop in prop_list)+")" for prop_list in full_ltl_list)+")"
 
-        return ltl_str
+        return structured_eng_str, ltl_str
 
 
     def populate_table_same_topic(self):
         # populate table that show same topic
+        self.same_topic_table_model = QtGui.QStandardItemModel(0,0) #initialize with 0 rows and 0 columns
+        self._tableView_same_topic.setModel(self.same_topic_table_model)
 
-        same_topic_table_model = QtGui.QStandardItemModel(0,0) #initialize with 0 rows and 0 columns
-        self._tableView_same_topic.setModel(same_topic_table_model)
+        # clear combo box
+        self.same_output_table_layout = {}
 
-        same_topic_table_model.setHorizontalHeaderItem(0, QtGui.QStandardItem("Topic"))
-        same_topic_table_model.setHorizontalHeaderItem(1, QtGui.QStandardItem("Output"))
-        same_topic_table_model.setHorizontalHeaderItem(2, QtGui.QStandardItem("Output-to-Topic Chain"))
+        # clear ltl lists
+        self.suggested_ltl_list, self.suggested_structured_eng_list = [], []
+
+        self.same_topic_table_model.setHorizontalHeaderItem(0, QtGui.QStandardItem("Topic"))
+        self.same_topic_table_model.setHorizontalHeaderItem(1, QtGui.QStandardItem("Output"))
+        self.same_topic_table_model.setHorizontalHeaderItem(2, QtGui.QStandardItem("Output-to-Topic Chain"))
 
         self._tableView_same_topic.horizontalHeader().resizeSection(0, 150) # Topic
         self._tableView_same_topic.horizontalHeader().resizeSection(1, 120) # Output
@@ -282,15 +352,20 @@ class PropMappingAndAnalysis(Plugin):
             self.output_published_topics['exclude_props'])
 
         gui_logger.log(1, 'self.published_graph: {0}'.format(self.published_graph))
-        self.suggested_ltl_list = []
+        self.suggested_structured_eng_list, self.suggested_ltl_list = [], []
 
         gui_logger.log(1, 'same_output_dict:{0}'.format(same_output_dict))
+
         current_row_count = 0 # track no of rows
         for ros_topic, output_list in same_output_dict.iteritems():
+            # remove topic that are in list
+            if any(filtered_substring in ros_topic for filtered_substring in self.final_filtered_list):
+                continue
+
             input_count = 0 # trak no of inputs for this output
 
             # set first column ros_topic (also break topic into parts to show everything in table)
-            same_topic_table_model.setItem(current_row_count,0,QtGui.QStandardItem(ros_topic.replace('/',' /').replace('_','_ ')))
+            self.same_topic_table_model.setItem(current_row_count,0,QtGui.QStandardItem(ros_topic.replace('/',' /').replace('_','_ ')))
 
             # convert two-item-list to a full list
             output_full_list = list(set(list(itertools.chain(*output_list))))
@@ -298,17 +373,8 @@ class PropMappingAndAnalysis(Plugin):
 
             for output_prop in output_full_list:
                 # set second column output_prop prop
-                same_topic_table_model.setItem(current_row_count,1,QtGui.QStandardItem(output_prop))
+                self.same_topic_table_model.setItem(current_row_count,1,QtGui.QStandardItem(output_prop))
 
-                # chain
-                #chain_str = check_resource_usage.chain_output(self.published_graph,\
-                #    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
-                #    "t_{ros_topic}".format(ros_topic=ros_topic.replace('/','_')),\
-                #    self.prop_dot_to_real_name)
-                #chain_str = check_resource_usage.chain_output(self.published_graph,\
-                #    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
-                #    "t_{ros_topic}".format(ros_topic=ros_topic.replace('/','_')),\
-                #    self.prop_dot_to_real_name)
                 prop_to_topic_list = self.chain_topic_node_dotnames_published_dict['exclude_props'][output_prop][self.prop_real_to_dot_name['t'][ros_topic]]
                 chain_str_list = []
                 # node and topic
@@ -316,12 +382,10 @@ class PropMappingAndAnalysis(Plugin):
                     if prop_dot_name.startswith('n'): # node
                         chain_str_list.append('('+self.prop_dot_to_real_name[prop_dot_name]+')')
                     else: # topic
-                        #gui_logger.log(4, prop_dot_name)
                         chain_str_list.append('['+self.prop_dot_to_real_name[prop_dot_name]+']')
                 chain_str  = " -> ".join(chain_str_list)
 
-                same_topic_table_model.setItem(current_row_count,2,QtGui.QStandardItem(chain_str))
-                gui_logger.log(6, 'self.output_published_dotnames[exclude_props][output_prop]: {0}'.format(self.output_published_dotnames['exclude_props'][output_prop]))
+                self.same_topic_table_model.setItem(current_row_count,2,QtGui.QStandardItem(chain_str))
                 gui_logger.log(8, 'chain_str: {0}'.format(chain_str))
 
                 current_row_count += 1
@@ -330,18 +394,20 @@ class PropMappingAndAnalysis(Plugin):
             # set output to span rows
             self._tableView_same_topic.setSpan(current_row_count-input_count, 0, input_count, 1)
 
+            # save starting row and ending row
+            self.same_output_table_layout[ros_topic] = [current_row_count-input_count, current_row_count]
+
             # fomulate ltl suggestions
-            ltl_str = self.get_ltl_suggestion(output_full_list)
+            structured_eng_str, ltl_str = self.get_ltl_suggestion(output_full_list)
+            self.suggested_structured_eng_list.append(structured_eng_str)
             self.suggested_ltl_list.append(ltl_str)
 
         # resize tableview
-        #self._tableView_same_topic.setWordWrap(True)
-        #self._tableView_same_topic.resizeRowsToContents()
         self._tableView_same_topic.horizontalHeader().setStretchLastSection(True)
 
         # resize tableview #self._tableView_same_topic.horizontalHeader().length()
-        self._tableView_same_topic.setMinimumSize(self._widget.width()-100, \
-                                                  self._tableView_same_topic.verticalHeader().length()+50)
+        #self._tableView_same_topic.setMinimumSize(self._widget.width()-100, \
+        #                                          self._tableView_same_topic.verticalHeader().length()+50)
         self._tableView_same_topic.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
 
@@ -374,15 +440,6 @@ class PropMappingAndAnalysis(Plugin):
                 # set second column input prop
                 output_to_input_table_model.setItem(current_row_count,1,QtGui.QStandardItem(input_prop))
 
-                # chain
-                #chain_str = check_resource_usage.chain_output(self.published_graph,\
-                #    "n__{example_name}_outputs_{output_prop}".format(example_name=self.example_name, output_prop=output_prop),\
-                #    "n__{example_name}_inputs_{input_prop}".format(example_name=self.example_name, input_prop=input_prop),\
-                #    self.prop_dot_to_real_name)
-                #chain_str = check_resource_usage.chain_output(self.published_graph,\
-                #    "n__"+"_".join([x for x in self.output_prop_to_ros_info[output_prop]['node'].split("/") if x]),\
-                #    "n__"+"_".join([x for x in self.input_prop_to_ros_info[input_prop]['node'].split("/") if x]),\
-                #    self.prop_dot_to_real_name)
                 input_node_name = self.prop_real_to_dot_name['n'][self.input_prop_to_ros_info[input_prop]['node']]
                 gui_logger.log(4,self.chain_topic_node_dotnames_published_dict['include_props'][output_prop])
                 prop_to_node_list = self.chain_topic_node_dotnames_published_dict['include_props'][output_prop][input_node_name]
@@ -407,8 +464,8 @@ class PropMappingAndAnalysis(Plugin):
         self._tableView_output_to_input.horizontalHeader().setStretchLastSection(True)
 
         # resize tableview # self._tableView_output_to_input.horizontalHeader().length()
-        self._tableView_output_to_input.setMinimumSize(self._widget.width()-100, \
-                                                  self._tableView_output_to_input.verticalHeader().length()+50)
+        #self._tableView_output_to_input.setMinimumSize(self._widget.width()-100, \
+        #                                          self._tableView_output_to_input.verticalHeader().length()+50)
         self._tableView_output_to_input.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
     def load_dot_graph(self, dot_graph):
@@ -491,7 +548,11 @@ class PropMappingAndAnalysis(Plugin):
         ####################################
         # filter some of the common topics #
         ####################################
-        topic_filtered_list = ['/clock','/statistics', '/rosout']#, '/rviz', '/map']
+        topic_filtered_list = ['/clock','/statistics', '/rosout', '/rviz', '/map', '/tf']
+
+        # for same topic exclusions
+        self.final_filtered_list = ['/parameter_updates', '/parameter_descriptions', '/costmap_updates','/bond', '/camera_info']
+
 
         #modify topic filtered list to filter other proposition nodes
         prop_topic_filtered_list = topic_filtered_list + \
@@ -723,7 +784,7 @@ class PropMappingAndAnalysis(Plugin):
         gui_logger.log(2, "rowCount:{0}, columnCount: {1}".format(self._gridLayout_output.rowCount(), self._gridLayout_output.columnCount()))
 
         # adjust the size of the scroll area
-        self._scrollAreaWidgetContents_Mapping.setMinimumSize(528, (self._gridLayout_input.rowCount() + self._gridLayout_output.rowCount()+2)*40)
+        #self._scrollAreaWidgetContents_Mapping.setMinimumSize(528, (self._gridLayout_input.rowCount() + self._gridLayout_output.rowCount()+2)*40)
 
         self._gridLayout_mapping.setRowStretch(1, self._gridLayout_input.rowCount())
         self._gridLayout_mapping.setRowStretch(4, self._gridLayout_output.rowCount())
