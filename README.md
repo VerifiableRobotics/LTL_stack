@@ -1,2 +1,2 @@
 # LTL_stack
-ROS Packages for running with correct-by-construction controllers
+ROS Packages for running correct-by-construction controllers
