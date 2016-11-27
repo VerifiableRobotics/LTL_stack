@@ -2,6 +2,7 @@
 import rospy
 import argparse
 import logging
+import math
 
 import std_msgs.msg
 import apriltags_ros.msg
@@ -10,9 +11,9 @@ import node_logging
 node_logger = logging.getLogger("node_logger")
 
 class TagSensor(object):
-    def __init__(self):
+    def __init__(self, args):
         self.tag_info_list = apriltags_ros.msg.AprilTagDetectionArray()
-
+        self.distance_thres = args.distance_thres
     def callback(self, data):
         # save latest info
         self.tag_info_list = data
@@ -23,8 +24,14 @@ class TagSensor(object):
         #node_logger.debug('Tag detected: {0}'.format(self.tag_info_list.detections))
         for tag_info in self.tag_info_list.detections:
             if tag_info.id == tag_no:
-                node_logger.debug('Tag {0} is True!'.format(tag_no))
-                return True
+                node_logger.debug('Tag {0} is True. Check within distance!'.format(tag_no))
+                dist = math.sqrt(tag_info.pose.pose.position.z**2 + \
+                                 tag_info.pose.pose.position.x**2)
+                if self.distance_thres > dist:
+                    node_logger.debug('Tag {0} is within distance!'.format(tag_no))
+                    return True
+                else:
+                    node_logger.debug('Dist: {0}'.format(dist))
         return False
 
 
@@ -34,13 +41,14 @@ if __name__ == "__main__":
     parser.add_argument('node_publish_topic', type=str, help='Specify name of publishing topic to the controller')
     parser.add_argument('--sensor_topic', type=str, help='Specify tag topic', nargs='?', const='/tag_detections', default='/tag_detections')
     parser.add_argument('--tag_no', type=int, help="tag number", nargs='?', const=0, default=0)
+    parser.add_argument('--distance_thres', type=int, help="distance to count as true", nargs='?', const=0.60, default=0.60)
 
     #args = parser.parse_args()
     args, unknown = parser.parse_known_args()
     print args
 
     rospy.init_node(args.node_name)
-    a = TagSensor()
+    a = TagSensor(args)
 
     # subsribe to necessary information
     rospy.Subscriber(args.sensor_topic, apriltags_ros.msg.AprilTagDetectionArray, callback=a.callback)
