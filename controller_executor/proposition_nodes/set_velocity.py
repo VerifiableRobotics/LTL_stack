@@ -6,6 +6,7 @@ import logging
 import turtlesim.msg
 import std_msgs.msg
 import geometry_msgs.msg
+import actionlib_msgs.msg
 
 import node_logging
 node_logger = logging.getLogger("node_logger")
@@ -13,6 +14,8 @@ node_logger = logging.getLogger("node_logger")
 class SetVelocityActuator(object):
     def __init__(self):
         self.controller_request_bool = False
+        # move base cancel pub
+        self._move_base_cancel_pub = rospy.Publisher('/move_base/cancel', actionlib_msgs.msg.GoalID, queue_size=1)
 
     def callback(self, data):
         # save latest info
@@ -53,6 +56,8 @@ if __name__ == "__main__":
                                       geometry_msgs.msg.Vector3(0,0,0))
     while not rospy.is_shutdown():
         if a.controller_request_bool:
+            a._move_base_cancel_pub.publish(actionlib_msgs.msg.GoalID())
+
             pub.publish(vel_msg)
             node_logger.debug(vel_msg)
         #else: # stop robot
