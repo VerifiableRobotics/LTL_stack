@@ -13,12 +13,11 @@ class RobotLocationPublisher(object):
     def __init__(self, node_publish_topic, robot_location_topic, region_in_consideration):
         self._region_in_consideration = region_in_consideration
 
-        # subscribe to current pose info
-        rospy.Subscriber(robot_location_topic, std_msgs.msg.String, callback=self.update_region)
-
         # setup publisher
         self.pub = rospy.Publisher(node_publish_topic, std_msgs.msg.Bool, queue_size=10)
 
+        # subscribe to current pose info
+        rospy.Subscriber(robot_location_topic, std_msgs.msg.String, callback=self.update_region)
 
     def update_region(self, data):
         if data.data == self._region_in_consideration:
