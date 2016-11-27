@@ -40,10 +40,10 @@ def get_region_obj(json_file, next_region, rot, scale, x_trans, y_trans):
     for point_org in region_info['points']:
         # first translate point based on region relative to full map
         point = [sum(x) for x in zip(point_org, region_info['position'])]
-        point[1] = im_height-point[1]
+        point[1] = point[1] #im_height-point[1]
 
         # now do map rotation
-        new_point = np.dot(scale_matrix,np.dot(transform_matrix,np.array([[point[0]],[point[1]],[1]])))
+        new_point = np.dot(transform_matrix,np.dot(scale_matrix,np.array([[point[0]],[point[1]],[1]])))
         region_operations_logger.debug('Old point:{0}, New point:{1}'.format(point, new_point))
 
         # convert to format for checking occupancy
@@ -62,12 +62,13 @@ def get_region_obj(json_file, next_region, rot, scale, x_trans, y_trans):
     ax = fig.add_subplot(111)
     patch = patches.PathPatch(region_path, facecolor='orange')
     ax.add_patch(patch)
-    ax.set_xlim(0,10)
-    ax.set_ylim(0,10)
-    plt.title(region_in_consideration)
+    # recompute the ax.dataLim
+    ax.relim()
+    # update ax.viewLim using the new dataLim
+    ax.autoscale_view()
+    plt.title(next_region)
     plt.show()
     """
-
     return region_path
 
 
