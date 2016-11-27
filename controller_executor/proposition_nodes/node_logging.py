@@ -15,9 +15,9 @@ def setupLogging(loggerLevel=None):
     class ColorLogFormatter(logging.Formatter):
         def __init__(self, *args, **kwds):
             super(ColorLogFormatter, self).__init__(*args, **kwds)
-            self.plain_formatter = logging.Formatter("%(asctime)s.%(msecs)3d %(levelname)5s [ %(module)s ] %(message)s", "%H:%M:%S")
-            self.debug_formatter = logging.Formatter("%(asctime)s.%(msecs)3d %(levelname)5s [ %(module)s ] %(message)s (line %(lineno)s)", "%H:%M:%S")
-            self.detailed_formatter = logging.Formatter("%(asctime)s.%(msecs)3d %(levelname)5s[ %(module)s ] %(message)s  (%(pathname)s, line %(lineno)s)", "%H:%M:%S")
+            self.plain_formatter = logging.Formatter("%(asctime)s.%(msecs)3d %(levelname)5s[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s", "%H:%M:%S")
+            self.debug_formatter = logging.Formatter("%(asctime)s.%(msecs)3d %(levelname)5s[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s", "%H:%M:%S")
+            self.detailed_formatter = logging.Formatter("%(asctime)s.%(msecs)3d %(levelname)5s[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s", "%H:%M:%S")
 
         def colorize(self, level, string):
             if sys.platform in ['win32', 'cygwin']:
@@ -25,7 +25,7 @@ def setupLogging(loggerLevel=None):
                 return string
 
             else:
-                colors = {'ERROR': 91, 'WARNING': 93, 'INFO': 97, 'DEBUG': 94, 'Level 1': 100, 'Level 2': 105, 'Level 4': 104, 'Level 6': 102, 'Level 8': 101}
+                colors = {'ERROR': 91, 'WARNING': 93, 'INFO': 97, 'DEBUG': 94, 'Level 1': 90, 'Level 2': 95, 'Level 4': "7;95", 'Level 6': 96, 'Level 8': 92}
                 return "\033[{0}m{1}\033[0m".format(colors[level], string)
 
         def format(self, record):
