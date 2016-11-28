@@ -1,5 +1,6 @@
 # LTL_stack
-ROS Packages for running correct-by-construction controllers
+This repository consists of three ROS Packages for running correct-by-construction controllers with ROS.
+For more information, please visit our [wiki](https://github.com/wongkaiweng/LTL_stack/wiki).
 
 
 === License ===
