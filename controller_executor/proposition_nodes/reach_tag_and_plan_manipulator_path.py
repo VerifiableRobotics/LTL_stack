@@ -12,12 +12,15 @@ import ast
 import getpass
 import copy
 
+
 import moveit_commander
 import moveit_msgs.msg, moveit_msgs.srv
 import geometry_msgs.msg
 import std_msgs.msg
 import trajectory_msgs.msg
 import brics_actuator.msg
+import apriltags_ros.msg
+import actionlib_msgs.msg
 
 import node_logging
 node_logger = logging.getLogger("node_logger")
@@ -34,7 +37,10 @@ GRIPPER_EFFORT = [1.0, 1.0]
 
 GRIPPER_JOINT_NAMES = ['gripper_finger_joint_l', 'gripper_finger_joint_r']
 
-REFERENCE_FRAME='/base_footprint'
+REFERENCE_FRAME='base_footprint'
+THRESHOLD_DISTANCE = 0.05 #0.1
+VELOCITY_SCALAR = 0.01
+MOVE_RATE = 30
 
 # for testing
 #rostopic pub /target_pose geometry_msgs/Pose '{position:  {x: 0.20, y: 0.0, z: 0.70}, orientation: {w: 1.0, x: 0.0,y: 0.0,z: 0.0}}'
@@ -76,6 +82,7 @@ class PlanPathAction(object):
             self._group.allow_replanning(allow_replanning)
             self._group.set_planning_time(planning_timeout)
             self._group.set_pose_reference_frame(REFERENCE_FRAME)
+            self._reference_frame = REFERENCE_FRAME
             node_logger.info("===== MoveIt! ready to operate for MoveGroup: {group_name} ====".format(group_name=args.group_name))
 
         except:
@@ -102,34 +109,32 @@ class PlanPathAction(object):
         self._transformed_target_pose_pub = rospy.Publisher('/transformed_target_pose', geometry_msgs.msg.PoseStamped, queue_size=10, latch=True)
         self._joint_states = None
 
+        # set up velocity pub
+        self._velocity_pub = rospy.Publisher(args.velocity_topic, geometry_msgs.msg.Twist, queue_size=10, latch=True)
+
         # set up subscriber for target pose info
         self._target_pose = None
-        self.target_pose_list = []
-        if args.target_pose_topic:
-            rospy.Subscriber(args.target_pose_topic, geometry_msgs.msg.Pose, callback=self.target_pose_callback, callback_args=args.z_offset)
-            node_logger.debug('Set target pose topic: {0}'.format(args.target_pose_topic))
+        self._target_move_pose = None
+        self._target_tag_no = args.target_tag_no
+        #self.target_pose_list = []
+        #if args.target_pose_topic:
+        #    rospy.Subscriber(args.target_pose_topic, geometry_msgs.msg.Pose, callback=self.target_pose_callback, callback_args=args.z_offset)
+        #    node_logger.debug('Set target pose topic: {0}'.format(args.target_pose_topic))
 
-        else:
-            # use given target pose
-            self.target_pose_list = ast.literal_eval(args.target_pose)
-            self._target_pose = geometry_msgs.msg.Pose(geometry_msgs.msg.Point(x=self.target_pose_list[0], y=self.target_pose_list[1], z=self.target_pose_list[2]),\
-                                 geometry_msgs.msg.Quaternion(x=self.target_pose_list[3], y=self.target_pose_list[4], z=self.target_pose_list[5], w=self.target_pose_list[6]))
-            node_logger.debug('Set target pose: {0}'.format(self._target_pose))
+        #else:
+        #    # use given target pose
+        self.target_pose_list = ast.literal_eval(args.target_pose)
+        self._target_pose = geometry_msgs.msg.Pose(geometry_msgs.msg.Point(x=self.target_pose_list[0], y=self.target_pose_list[1], z=self.target_pose_list[2]),\
+                            geometry_msgs.msg.Quaternion(x=self.target_pose_list[3], y=self.target_pose_list[4], z=self.target_pose_list[5], w=self.target_pose_list[6]))
+        node_logger.debug('Set target pose: {0}'.format(self._target_pose))
 
-        #self.target_pose_list = [0.05, 0.0, 0.30]
         time.sleep(1)
 
         # also subscribe to controller request
         rospy.Subscriber(args.node_subscribe_topic, std_msgs.msg.Bool, callback=self.executor_callback)
 
-        # setup default pose
-        #self._default_pose = None
-        #self.default_pose_list = ast.literal_eval(args.default_pose)
-        #if self.default_pose_list:
-        #    self._default_pose = geometry_msgs.msg.Pose(geometry_msgs.msg.Point(x=self.default_pose_list[0], y=self.default_pose_list[1], z=self.default_pose_list[2]),\
-        #                    geometry_msgs.msg.Quaternion(x=self.default_pose_list[3], y=self.default_pose_list[4], z=self.default_pose_list[5], w=self.default_pose_list[6]))
-        #    node_logger.debug('Set default pose: {0}'.format(self._default_pose))
-
+        # subsribe to necessary information
+        rospy.Subscriber(args.sensor_topic, apriltags_ros.msg.AprilTagDetectionArray, callback=self.apriltag_callback)
 
         # try using the fk pose
         # trying setting joint constraints instead
@@ -139,38 +144,9 @@ class PlanPathAction(object):
         #self._target_pose = self.get_fk_from_moveit(self._group.get_joints(), [4.512, 0.386, -2.43, 1.41, 4.57]).pose
         #self.get_position_ik_from_moveit(self.get_fk_from_moveit(self._group.get_joints(), [4.512, 0.386, -2.43, 1.41, 4.57]))
 
-    def test_points(self):
-        self.plot_obj = plot_reachable_points.PlotPoints()
-        self.file_handle = open('/home/{0}/points.txt'.format(getpass.getuser()),'w+')
-        self.file_handle.write('[{0}, {1}, {2}]\n'.format(-10*0.02 + self.target_pose_list[0],-10*0.02 + self.target_pose_list[1],-10*0.02 + self.target_pose_list[2]))
-        while not rospy.is_shutdown():
-            increment = 0.02
-            for x in range(-5,10):
-                for y in range(-1,2):
-                    for z in range(-10,5):
-                        self._target_pose.position.x = x*0.02 + self.target_pose_list[0]
-                        self._target_pose.position.y = y*0.02 + self.target_pose_list[1]
-                        self._target_pose.position.z = z*0.02 + self.target_pose_list[2]
-                        self._target_pose.orientation.x = 1
-                        self._target_pose.orientation.y = 0
-                        self._target_pose.orientation.z = 0
-                        self._target_pose.orientation.w = 0
 
-                        node_logger.warning('x:{0}, y:{1}, z:{2}'.format(self._target_pose.position.x,self._target_pose.position.y,self._target_pose.position.z))
-                        self.publish_transformed_pose()
-                        #self.get_position_ik_from_moveit(self.publish_transformed_pose())
-                        if self.get_position_ik_from_moveit(self.publish_transformed_pose()):
-                            node_logger.warning('IK found')
-                            #if self.plan_traj():
-                            self.plot_obj.plot_point(self._target_pose.position.x,self._target_pose.position.y,self._target_pose.position.z)
-                            #self.file_handle.write('[{0}, {1}, {2}]\n'.format(self._target_pose.position.x,self._target_pose.position.y,self._target_pose.position.z))
-                            self.file_handle.write('1\n')
-                            time.sleep(0.1)
-                        else:
-                            node_logger.error('No IK found')
-                            self.file_handle.write('0\n')
-
-                        #time.sleep(2)
+        # move base cancel pub
+        self._move_base_cancel_pub = rospy.Publisher('/move_base/cancel', actionlib_msgs.msg.GoalID, queue_size=1)
 
 
     def get_fk_from_moveit(self, joint_names, joint_positions):
@@ -213,7 +189,7 @@ class PlanPathAction(object):
         request.pose_stamped = pose_stamped
 
         # fix y
-        #request.pose_stamped.pose.position.y = 0
+        request.pose_stamped.pose.position.y = 0
         #request.pose_stamped.pose.position.z = 0.06
 
         # downward
@@ -245,14 +221,10 @@ class PlanPathAction(object):
         except rospy.ServiceException, e:
             node_logger.exception("Service call failed: %s"%e)
 
-
+    """
     def target_pose_callback(self, data, z_offset):
         world_tag_pose = [data.position.x, data.position.y, data.position.z]
         world_tag_rot = [data.orientation.x, data.orientation.y, data.orientation.z, data.orientation.w]
-
-        # set target list
-        self.target_pose_list=[data.position.x, data.position.y, data.position.z, data.orientation.x, \
-                              data.orientation.y, data.orientation.z, data.orientation.w]
 
         # transform frame
         # for API visit http://www.lfd.uci.edu/~gohlke/code/transformations.py.html
@@ -279,6 +251,7 @@ class PlanPathAction(object):
 
 
         self.publish_transformed_pose()
+    """
 
     def publish_transformed_pose(self):
         # for rviz debugging
@@ -290,16 +263,27 @@ class PlanPathAction(object):
 
         return a
 
+    def apriltag_callback(self, data):
+        # save latest info
+        for tag_info in data.detections:
+            if tag_info.id == self._target_tag_no:
+                node_logger.debug('Got tag at z:{0} x:{1}'.format(\
+                    tag_info.pose.pose.position.z, tag_info.pose.pose.position.x))
+
+                self._target_move_pose = tag_info.pose.pose
+                break
+        #else:
+        #    self._target_move_pose = None
 
     def executor_callback(self, data):
         if data.data:
-            # action is true
-            #node_logger.debug("Action turns True!")
-
             # publish transformed pose
             self.publish_transformed_pose()
 
             if not self._planning_traj:
+                # action is true
+                node_logger.debug("Action turns True!")
+
                 if self.plan_traj(): # succesfully found a plan
                     self._pub_find_path.publish(True)
                 else:
@@ -311,9 +295,10 @@ class PlanPathAction(object):
         else:
             # action is false
             #node_logger.debug("Action turns False!")
-            if not self._planning_traj:
+            if self._planning_traj:
                 self._group.stop()
             self._planning_traj = False
+            self._target_move_pose  = None
             self._pub_status.publish(False)
 
     def shutdown(self):
@@ -338,13 +323,15 @@ class PlanPathAction(object):
 
         return gripper_positions
 
-    def call_plan_and_execute(self, position_type_str, pose_list, pose_obj):
+    def call_plan_and_execute(self, position_type_str, pose_obj):
         """
         pose_list: need x,y, and z
         position_type_str: goal or default
         """
         # now set pose target
-        node_logger.info("===== Setting {position_type_str} position:{pose_target} =========".format(position_type_str=position_type_str, pose_target=pose_list))
+        node_logger.info("===== Setting {position_type_str} position:{pose_target} =========".format(\
+                    position_type_str=position_type_str, \
+                    pose_target=[pose_obj.position.x, pose_obj.position.y, pose_obj.position.z]))
 
         self._group.set_start_state_to_current_state()
         pose_stamped = geometry_msgs.msg.PoseStamped()
@@ -353,16 +340,14 @@ class PlanPathAction(object):
         pose_stamped.pose = pose_obj
         self._transformed_target_pose_pub.publish(pose_stamped)
 
+        # try IK then place
         joint_dict = self.get_position_ik_from_moveit(pose_stamped)
-        #    count +=1
         if joint_dict:
             node_logger.info("=====  Joint Planning Yay! =====")
             self._group.set_joint_value_target(joint_dict)
             node_logger.log(8, joint_dict)
-        else:
-            self._group.set_position_target(self.target_pose_list[:3])
-        #self._group.set_position_target(self.target_pose_list[:3],\
-        #                 self._group.get_end_effector_link())
+        else: # can't find ik
+            self._group.set_position_target([pose_obj.position.x, pose_obj.position.y, pose_obj.position.z])
 
         node_logger.info("===== Planning to {position_type_str} position ======================".format(position_type_str=position_type_str))
         plan = self._group.plan()
@@ -381,6 +366,36 @@ class PlanPathAction(object):
 
         return True
 
+    def stop_robot(self):
+        self._move_base_cancel_pub.publish(actionlib_msgs.msg.GoalID())
+        # stop before reach
+        vel_obj = geometry_msgs.msg.Twist()
+        self._velocity_pub.publish(vel_obj)
+
+    def move_to_target(self):
+        rate = rospy.Rate(MOVE_RATE)
+        vel_obj = geometry_msgs.msg.Twist()
+        dist = math.sqrt(self._target_move_pose.position.z**2 + self._target_move_pose.position.x**2)
+        while not (dist < THRESHOLD_DISTANCE or rospy.is_shutdown()):
+            vel_obj.linear.x = self._target_move_pose.position.z/dist*VELOCITY_SCALAR
+            vel_obj.linear.y = -self._target_move_pose.position.x/dist*VELOCITY_SCALAR
+            self._velocity_pub.publish(vel_obj)
+            node_logger.debug('vx: {0}, vy:{1}'.format(vel_obj.linear.x, vel_obj.linear.y))
+
+            # update distance before sleep
+            dist -= math.sqrt(vel_obj.linear.x**2 + vel_obj.linear.y**2)*1/MOVE_RATE
+            node_logger.debug('dist: {0}'.format(dist))
+            rate.sleep()
+            #dist = math.sqrt(self._target_move_pose.position.z**2 + self._target_move_pose.position.x**2)
+
+
+        # stop after threshold
+        vel_obj = geometry_msgs.msg.Twist()
+        self._velocity_pub.publish(vel_obj)
+
+        return True
+
+
     def plan_traj(self):
         """
         reuse planning
@@ -388,29 +403,37 @@ class PlanPathAction(object):
         self._planning_traj = True
         self._plan = None
 
+        self.stop_robot()
+        # move to location
+        while not self._target_move_pose:
+            node_logger.warning('Waiting for tag!...')
+            rospy.sleep(0.2)
+            if rospy.is_shutdown():
+                break
+
+        if self._target_move_pose:
+            self.move_to_target()
+
         # cannot get target pose
         if not self._target_pose:
             node_logger.warning('No target pose!...')
             return False
         else:
+            # first open gripper
+            #node_logger.debug('Opening gripper...')
+            # target pose
+            #for x in range(0,2):
+            #    self._gripper_pub.publish(self.control_gripper(GRIPPER_JOINT_NAMES, GRIPPER_OPEN))
+            #rospy.sleep(3)
+
+
             #pre-grasp (somewhere on top)
-            #pre_target_pose_list = copy.deepcopy(self.target_pose_list[:3])
-            #pre_target_pose_list[2] = 0.15
-            #pre_target_pose = copy.deepcopy(self._target_pose)
-            #pre_target_pose.position.z = 0.15
-            #pre_target_pose_execution = self.call_plan_and_execute('goal', \
-            #            pre_target_pose_list, pre_target_pose)
+            pre_target_pose = copy.deepcopy(self._target_pose)
+            pre_target_pose.position.z = 0.15
+            pre_target_pose_execution = self.call_plan_and_execute('goal', pre_target_pose)
 
             # go to pose
-            target_pose_execution = self.call_plan_and_execute('goal', self.target_pose_list[:3], self._target_pose)
-
-
-            # first open gripper
-            node_logger.debug('Opening gripper...')
-            # target pose
-            for x in range(0,5):
-                self._gripper_pub.publish(self.control_gripper(GRIPPER_JOINT_NAMES, GRIPPER_OPEN))
-            rospy.sleep(3)
+            target_pose_execution = self.call_plan_and_execute('goal', self._target_pose)
 
             # close gripper
             #node_logger.debug('Closing gripper...')
@@ -428,11 +451,6 @@ class PlanPathAction(object):
         self._group.execute(self._plan, wait=True)
 
         # go to a set position (e.g: back to default pose)
-        #default_pose_execution = True
-        #if self.default_pose_list:
-        #    default_pose_execution = self.call_plan_and_execute('default', self.default_pose_list[:3], self._default_pose)
-        #    #3.2487032170468826, 2.582055259778615, -3.1800517584293253, 2.969312741099614, 4.928763953218504
-        #node_logger.info("===Target Pose Execution: {0}, Default Pose Execution: {1}===".format(target_pose_execution, default_pose_execution))
         node_logger.info("=== Returned to Default pose ===")
 
         return target_pose_execution
@@ -480,14 +498,13 @@ if __name__ == "__main__":
     parser.add_argument('node_name', type=str, help='Specify name of ros node')
     parser.add_argument('node_subscribe_topic', type=str, help='Specify controller topic to respond to')
     parser.add_argument('--group_name', type=str, help='Specify MoveIt! group name to use.', nargs='?', const='arm_1', default='arm_1')
-    parser.add_argument('--target_pose_topic', type=str, help='Specify target pose topic.', nargs='?', const='/target_pose', default='/target_pose')
-    parser.add_argument('--target_pose', type=str, help='Specify target pose in str format [x, y, z, x, y, z, w]. Priorty over target_pose_topic', nargs='?', \
-                                const='[0, 0, 0, 0, 0, 0, 0]', default='[0, 0, 0, 0, 0, 0, 0]')
+    parser.add_argument('--sensor_topic', type=str, help='Specify tag topic from camera', nargs='?', const='/tag_detections', default='/tag_detections')
+    parser.add_argument('--target_tag_no', type=int, help='Specify target apriltag number.', nargs='?', const=0, default=0)
     #parser.add_argument('--gripper_topic', type=str, help='Specify topic of the gripper to close.', nargs='?', \
     #                                       const='arm_1/gripper_controller/position_command', default='arm_1/gripper_controller/position_command')
-    parser.add_argument('--z_offset', type=float, help='z offset for target pose in meters.', nargs='?', const=0.3, default=0.3)
-    #parser.add_argument('--default_pose', type=str, help='Specify default pose after target pose in str format [x, y, z, x, y, z, w].', nargs='?', \
-    #                            const='[]', default='[]')
+    parser.add_argument('--velocity_topic', type=str, help='Specify velocity topic of robot.', nargs='?', const='/cmd_vel', default='/cmd_vel')
+    parser.add_argument('--target_pose', type=str, help='Specify target pose in str format [x, y, z, x, y, z, w]. Priorty over target_pose_topic', nargs='?', \
+                                const='[0.45, 0.0, 0.10, 0,1, 0, 0]', default='[0.45, 0.0, 0.06, 0,1, 0, 0]')
 
     args, unknown = parser.parse_known_args()
     node_logger.debug(args)
@@ -497,9 +514,15 @@ if __name__ == "__main__":
     a = PlanPathAction(args)
     rospy.on_shutdown(a.shutdown)
     #a.test_points()
+    #a.plan_traj()
+    #time.sleep(10)
+
     #import time
     #while not rospy.is_shutdown():
-    #    a.plan_traj()
-    #    time.sleep(10)
+    #    if a._target_move_pose:
+    #        a.move_to_target()
+    #        a.plan_traj()
+    #        break
+    #        time.sleep(10)
 
     rospy.spin()
