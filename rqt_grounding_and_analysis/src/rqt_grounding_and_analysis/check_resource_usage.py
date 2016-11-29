@@ -21,7 +21,7 @@ from controller_executor import file_operations
 
 
 def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                          chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[]):
+                          chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[]):
     # recursive subscribed topics
     for src_dest_pair in edges_dict.keys():
 
@@ -30,7 +30,8 @@ def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_d
         # and also not keep going with topics in the filtered list
         if src_dest_pair[1] == prop_dot_format and \
         not src_dest_pair[0] in prop_dotname_list and \
-        not ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) in topic_filtered_list:
+        not ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) in topic_filtered_list and \
+        not any([x in ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) for x in partial_topic_filtered_list]):
         #not ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) in prop_list:
 
             # retrieve our source
@@ -57,7 +58,7 @@ def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_d
 
 
 def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                         chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[]):
+                         chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[]):
     # recursive published topics
     for src_dest_pair in edges_dict.keys():
         #if "action_topics" in src_dest_pair[0] and "move_base" in src_dest_pair[1]:
@@ -66,9 +67,11 @@ def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_di
         # check if we are the source while
         # not going back in the case for nodelet and actions
         # and also not keep going with topics in the filtered list
+        # and not going if we find partial of these topics
         if src_dest_pair[0] == prop_dot_format and \
         not src_dest_pair[1] in prop_dotname_list and \
-        not ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']) in topic_filtered_list:
+        not ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']) in topic_filtered_list and\
+        not any([x in ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']) for x in partial_topic_filtered_list]):
         #not ast.literal_eval(nodes_dict[src_dest_pair[1][0]['attributes']['label']) in prop_list:
 
             #check_resources_logger.warning("{0}:{1}".format(ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']), \
@@ -226,7 +229,41 @@ def check_possible_concurrent_topic_access(published_topics):
     check_resources_logger.info('possible_concurrent_topic_access: {0}'.format(possible_concurrent_topic_access))
     return possible_concurrent_topic_access
 
-def check_possible_action_affected_sensors(subscribed_topics, output_published_topics):
+def check_possible_action_affected_sensors(input_prop_to_ros_info, output_prop_list, prop_real_to_dot_name, output_published_dotnames):
+    """
+    Given a sensor prop, check if it if subscribing to topics spawned by an action
+    @param subscribed_topics: proposition to subscribing information
+    @type  subscribed_topics: dict
+    @param output_list: list of output propositions
+    @type  output_list: list
+    @return: possible_action_affected_sensors in the form of output prop: list of input prop
+    @rtype: dict
+    ['include_props']
+    """
+
+    possible_action_affected_sensors = {}
+
+    for input_prop in input_prop_to_ros_info.keys():
+        node_dotname = prop_real_to_dot_name['n'][input_prop_to_ros_info[input_prop]['node']]
+
+        for output_prop in output_prop_list:
+            check_resources_logger.log(2, 'output_published_dotnames[output_prop]: {0}, output_prop: {1}, node_dotname: {2}'.format(\
+                        output_published_dotnames[output_prop], output_prop, node_dotname))
+
+            if node_dotname in output_published_dotnames[output_prop]: # check if input comes from output prop
+                check_resources_logger.debug('output prop:{0} to input prop {1}'.format(output_prop, input_prop))
+
+                if not output_prop in possible_action_affected_sensors.keys():
+                    possible_action_affected_sensors[output_prop] = []
+
+                # now append which action affects what sensors
+                if not input_prop in possible_action_affected_sensors[output_prop]:
+                    possible_action_affected_sensors[output_prop].append(input_prop)
+
+    check_resources_logger.info('possible_action_affected_sensors: {0}'.format(possible_action_affected_sensors))
+    return possible_action_affected_sensors
+
+def check_possible_action_affected_sensors_old(subscribed_topics, output_published_topics):
     """
     Given a sensor prop, check if it if subscribing to topics spawned by an action
     @param subscribed_topics: proposition to subscribing information
@@ -263,18 +300,27 @@ def check_possible_action_affected_sensors(subscribed_topics, output_published_t
 if __name__ == "__main__":
     # --- firefighting ---- #
     #load dot file
-    dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/firefighting/firefighting_stay_in_place_all.dot'.format(getpass.getuser()))
+    #dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/firefighting/firefighting_stay_in_place_all.dot'.format(getpass.getuser()))
 
     #load inputs and outputs
-    input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
-        '/home/{0}/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting.yaml'.format(getpass.getuser()))
-    example_name = "firefighting"
+    #input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
+    #    '/home/{0}/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting.yaml'.format(getpass.getuser()))
+    #example_name = "firefighting"
 
     # ---- simple ---- #
     #dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/simple/simple_all.dot'.format(getpass.getuser()))
     #input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
     #    '/home/{0}/LTLROS_ws/src/controller_executor/examples/simple/simple.yaml'.format(getpass.getuser()))
     #example_name = "simple"
+
+    # --- move_group_and_move_base ---- #
+    #load dot file
+    dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/move_group_and_move_base/rosgraph.dot'.format(getpass.getuser()))
+
+    #load inputs and outputs
+    input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
+        '/home/{0}/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/move_group_and_move_base.yaml'.format(getpass.getuser()))
+    example_name = "move_group_and_move_base"
 
     ##################  #################
     ##### NODES ######  ###### EDGES ####
@@ -328,10 +374,14 @@ if __name__ == "__main__":
     chain_topic_node_dotnames_published_dict = {key: {} for key in output_prop_to_ros_info.keys()+\
                                                                   input_prop_to_ros_info.keys()}
 
+    prop_dot_to_real_name, prop_real_to_dot_name = get_prop_dot_name_real_name_mapping(nodes_dict)
+
     ####################################
     # filter some of the common topics #
     ####################################
-    topic_filtered_list = ['/clock','/statistics', '/rosout']
+    topic_filtered_list = ['/clock','/statistics', '/rosout'] + \
+                        [output_prop_to_ros_info[x]['node'] for x in output_prop_to_ros_info.keys()]
+    partial_topic_filtered_list = ['/rviz']
 
     ###############
     ### inputs ####
@@ -347,12 +397,14 @@ if __name__ == "__main__":
         # recursive subscribed topics
         get_subscribed_topics(input_prop_dot_format, input_subscribed_dotnames[input_prop], \
                               input_subscribed_topics[input_prop], edges_dict, nodes_dict, \
-                              [input_prop_dot_format], chain_topic_node_dotnames_published_dict, input_prop, topic_filtered_list)
+                              [input_prop_dot_format], chain_topic_node_dotnames_published_dict, input_prop, \
+                              topic_filtered_list, partial_topic_filtered_list)
 
         # recursive published topics
         get_published_topics(input_prop_dot_format, input_published_dotnames[input_prop], \
                              input_published_topics[input_prop], edges_dict, nodes_dict, \
-                             [input_prop_dot_format], chain_topic_node_dotnames_published_dict, input_prop, topic_filtered_list)
+                             [input_prop_dot_format], chain_topic_node_dotnames_published_dict, input_prop, \
+                             topic_filtered_list, partial_topic_filtered_list)
 
 
     check_resources_logger.debug("input_subscribed_topics: {0}".format(str(input_subscribed_topics)))
@@ -374,12 +426,14 @@ if __name__ == "__main__":
         # recursive subscribed topics
         get_subscribed_topics(output_prop_dot_format, output_subscribed_dotnames[output_prop], \
                               output_subscribed_topics[output_prop], edges_dict, nodes_dict, \
-                              [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, output_prop, topic_filtered_list)
+                              [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, \
+                              output_prop, topic_filtered_list, partial_topic_filtered_list)
 
         # recursive published topics
         get_published_topics(output_prop_dot_format, output_published_dotnames[output_prop], \
                              output_published_topics[output_prop], edges_dict, nodes_dict, \
-                             [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, output_prop, topic_filtered_list)
+                             [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, \
+                             output_prop, topic_filtered_list, partial_topic_filtered_list)
 
     #check_resources_logger.info("Published topics - bedroom: {0}".format(output_published_topics['bedroom']))
 
@@ -404,4 +458,6 @@ if __name__ == "__main__":
     # now call for comparison
     check_possible_concurrent_topic_access(output_published_topics)
 
-    check_possible_action_affected_sensors(input_subscribed_topics, output_published_topics)
+    #check_possible_action_affected_sensors(input_subscribed_topics, output_published_topics)
+    check_possible_action_affected_sensors(input_prop_to_ros_info, output_prop_to_ros_info.keys(), \
+                                            prop_real_to_dot_name, output_published_dotnames)
