@@ -24,6 +24,7 @@ node_logger = logging.getLogger("node_logger")
 from controller_executor import region_operations
 
 # TODO: subscribe to run_executor and cancel goal when it is paused?
+PUB_MAP_THRES = 5
 
 class MapPublisher(object):
     _current_region = ""
@@ -54,6 +55,7 @@ class MapPublisher(object):
         self._map_x_trans = x_trans
         self._map_y_trans = y_trans
 
+        self.pub_map_count = 0 # only publish when we consistently geting signals
 
         # preload all possible maps for this next region
         # first load the base case
@@ -142,11 +144,14 @@ class MapPublisher(object):
 
     def publish_map(self, data):
         if data.data:
+
+            self.pub_map_count += 1
             #node_logger.debug("Map publish request: {0}.".format(rospy.get_name()))
 
             # update map topic with new occupancy grid (if region changes)
-            if not self._map_occpy_grid or not self._published_current_region or \
-                (time.time()-self._last_pub_time) > 5:
+            if self.pub_map_count > PUB_MAP_THRES and \
+                (not self._map_occpy_grid or not self._published_current_region or \
+                (time.time()-self._last_pub_time) > 5):
                 #(rospy.Time.now()-self._last_pub_time) > 10:#rospy.Duration(10):
 
                 self._last_pub_time = time.time()#rospy.Time.now()  # 30s
@@ -194,6 +199,8 @@ class MapPublisher(object):
                 #    node_logger.info("Goal failed or aborted.")
             #else:
             #    node_logger.info('Navigation time lapse: {0}'.format((rospy.Time.now()-self._last_pub_time)))
+        else:
+            self.pub_map_count = 0 # reset count
 
     def form_occupancy_list(self, image_old_obj):
         image_obj = image_old_obj.transpose(Image.FLIP_TOP_BOTTOM) # test
