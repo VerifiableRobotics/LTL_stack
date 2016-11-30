@@ -1,0 +1,115 @@
+[INPUT]
+object
+pickup_ac
+drop_ac
+rightLane_rc
+leftLane_rc
+topLane_rc
+leftGround_rc
+bottomLane_rc
+rightGround_rc
+
+[OUTPUT]
+pickup
+drop
+holdingObject
+sawObject
+stop
+rightLane
+leftLane
+topLane
+leftGround
+bottomLane
+rightGround
+
+[ENV_TRANS]
+| ! & rightLane_rc rightLane rightLane_rc'
+| ! & leftLane_rc leftLane leftLane_rc'
+| ! & topLane_rc topLane topLane_rc'
+| ! & leftGround_rc leftGround leftGround_rc'
+| ! & bottomLane_rc bottomLane bottomLane_rc'
+| ! & rightGround_rc rightGround rightGround_rc'
+| ! & rightLane_rc topLane | rightLane_rc' topLane_rc'
+| ! & rightLane_rc bottomLane | rightLane_rc' bottomLane_rc'
+| ! & rightLane_rc rightGround | rightLane_rc' rightGround_rc'
+| ! & leftLane_rc topLane | leftLane_rc' topLane_rc'
+| ! & leftLane_rc leftGround | leftLane_rc' leftGround_rc'
+| ! & leftLane_rc bottomLane | leftLane_rc' bottomLane_rc'
+| ! & topLane_rc rightLane | topLane_rc' rightLane_rc'
+| ! & topLane_rc leftLane | topLane_rc' leftLane_rc'
+| ! & topLane_rc leftGround | topLane_rc' leftGround_rc'
+| ! & topLane_rc rightGround | topLane_rc' rightGround_rc'
+| ! & leftGround_rc leftLane | leftGround_rc' leftLane_rc'
+| ! & leftGround_rc topLane | leftGround_rc' topLane_rc'
+| ! & leftGround_rc bottomLane | leftGround_rc' bottomLane_rc'
+| ! & leftGround_rc rightGround | leftGround_rc' rightGround_rc'
+| ! & bottomLane_rc rightLane | bottomLane_rc' rightLane_rc'
+| ! & bottomLane_rc leftLane | bottomLane_rc' leftLane_rc'
+| ! & bottomLane_rc leftGround | bottomLane_rc' leftGround_rc'
+| ! & bottomLane_rc rightGround | bottomLane_rc' rightGround_rc'
+| ! & rightGround_rc rightLane | rightGround_rc' rightLane_rc'
+| ! & rightGround_rc topLane | rightGround_rc' topLane_rc'
+| ! & rightGround_rc leftGround | rightGround_rc' leftGround_rc'
+| ! & rightGround_rc bottomLane | rightGround_rc' bottomLane_rc'
+| & ! rightLane_rc' ! ! | | | | leftLane_rc' topLane_rc' leftGround_rc' bottomLane_rc' rightGround_rc' & rightLane_rc' ! | | | | leftLane_rc' topLane_rc' leftGround_rc' bottomLane_rc' rightGround_rc'
+| & ! leftLane_rc' ! ! | | | | rightLane_rc' topLane_rc' leftGround_rc' bottomLane_rc' rightGround_rc' & leftLane_rc' ! | | | | rightLane_rc' topLane_rc' leftGround_rc' bottomLane_rc' rightGround_rc'
+| & ! topLane_rc' ! ! | | | | rightLane_rc' leftLane_rc' leftGround_rc' bottomLane_rc' rightGround_rc' & topLane_rc' ! | | | | rightLane_rc' leftLane_rc' leftGround_rc' bottomLane_rc' rightGround_rc'
+| & ! leftGround_rc' ! ! | | | | rightLane_rc' leftLane_rc' topLane_rc' bottomLane_rc' rightGround_rc' & leftGround_rc' ! | | | | rightLane_rc' leftLane_rc' topLane_rc' bottomLane_rc' rightGround_rc'
+| & ! bottomLane_rc' ! ! | | | | rightLane_rc' leftLane_rc' topLane_rc' leftGround_rc' rightGround_rc' & bottomLane_rc' ! | | | | rightLane_rc' leftLane_rc' topLane_rc' leftGround_rc' rightGround_rc'
+| & ! rightGround_rc' ! ! | | | | rightLane_rc' leftLane_rc' topLane_rc' leftGround_rc' bottomLane_rc' & rightGround_rc' ! | | | | rightLane_rc' leftLane_rc' topLane_rc' leftGround_rc' bottomLane_rc'
+| ! & pickup_ac pickup pickup_ac'
+| ! & ! pickup_ac ! pickup ! pickup_ac'
+| ! & drop_ac drop drop_ac'
+| ! & ! drop_ac ! drop ! drop_ac'
+| | | | | & & & & & rightLane_rc' ! leftLane_rc' ! topLane_rc' ! leftGround_rc' ! bottomLane_rc' ! rightGround_rc' & & & & & ! rightLane_rc' leftLane_rc' ! topLane_rc' ! leftGround_rc' ! bottomLane_rc' ! rightGround_rc' & & & & & ! rightLane_rc' ! leftLane_rc' topLane_rc' ! leftGround_rc' ! bottomLane_rc' ! rightGround_rc' & & & & & ! rightLane_rc' ! leftLane_rc' ! topLane_rc' leftGround_rc' ! bottomLane_rc' ! rightGround_rc' & & & & & ! rightLane_rc' ! leftLane_rc' ! topLane_rc' ! leftGround_rc' bottomLane_rc' ! rightGround_rc' & & & & & ! rightLane_rc' ! leftLane_rc' ! topLane_rc' ! leftGround_rc' ! bottomLane_rc' rightGround_rc'
+
+[ENV_LIVENESS]
+& & & drop drop_ac drop_ac drop_ac
+| | | | | | | | | | | & rightLane rightLane_rc' & rightLane ! rightLane' & leftLane leftLane_rc' & leftLane ! leftLane' & topLane topLane_rc' & topLane ! topLane' & leftGround leftGround_rc' & leftGround ! leftGround' & bottomLane bottomLane_rc' & bottomLane ! bottomLane' & rightGround rightGround_rc' & rightGround ! rightGround'
+| | | | | | | & pickup pickup_ac' & ! pickup ! pickup_ac' & pickup ! pickup' & ! pickup pickup' & drop drop_ac' & ! drop ! drop_ac' & drop ! drop' & ! drop drop'
+
+[ENV_INIT]
+topLane_rc
+| | | | | & & & & & rightLane_rc ! leftLane_rc ! topLane_rc ! leftGround_rc ! bottomLane_rc ! rightGround_rc & & & & & ! rightLane_rc leftLane_rc ! topLane_rc ! leftGround_rc ! bottomLane_rc ! rightGround_rc & & & & & ! rightLane_rc ! leftLane_rc topLane_rc ! leftGround_rc ! bottomLane_rc ! rightGround_rc & & & & & ! rightLane_rc ! leftLane_rc ! topLane_rc leftGround_rc ! bottomLane_rc ! rightGround_rc & & & & & ! rightLane_rc ! leftLane_rc ! topLane_rc ! leftGround_rc bottomLane_rc ! rightGround_rc & & & & & ! rightLane_rc ! leftLane_rc ! topLane_rc ! leftGround_rc ! bottomLane_rc rightGround_rc
+
+[SYS_TRANS]
+| & ! & | object' sawObject' ! holdingObject' ! pickup' & & | object' sawObject' ! holdingObject' pickup'
+| ! & object' ! pickup_ac sawObject'
+| ! pickup_ac ! sawObject'
+| ! & sawObject ! pickup_ac sawObject'
+| ! & ! sawObject ! object' ! sawObject'
+| ! & pickup_ac ! drop_ac holdingObject'
+| ! drop_ac ! holdingObject'
+| ! & holdingObject ! drop_ac holdingObject'
+| ! & ! holdingObject ! pickup_ac ! holdingObject'
+| & ! & holdingObject' rightGround_rc' ! stop' & & holdingObject' rightGround_rc' stop'
+| & ! & holdingObject' rightGround_rc' ! drop' & & holdingObject' rightGround_rc' drop'
+! & pickup' drop'
+& & & & & & & & & & & & & & ! & rightLane leftLane ! & rightLane topLane ! & rightLane leftGround ! & rightLane bottomLane ! & rightLane rightGround ! & leftLane topLane ! & leftLane leftGround ! & leftLane bottomLane ! & leftLane rightGround ! & topLane leftGround ! & topLane bottomLane ! & topLane rightGround ! & leftGround bottomLane ! & leftGround rightGround ! & bottomLane rightGround
+| ! & & ! stop' ! pickup'  rightLane_rc' | | | rightLane' topLane' bottomLane' rightGround'
+| ! & & ! stop' ! pickup' leftLane_rc' | | | leftLane' topLane' leftGround' bottomLane'
+| ! & & ! stop' ! pickup' topLane_rc' | | | | topLane' rightLane' leftLane' leftGround' rightGround'
+| ! & & ! stop' ! pickup' leftGround_rc' | | | | leftGround' leftLane' topLane' bottomLane' rightGround'
+| ! & & ! stop' ! pickup' bottomLane_rc' | | | | bottomLane' rightLane' leftLane' leftGround' rightGround'
+| ! & & ! stop' ! pickup' rightGround_rc' | | | | rightGround' rightLane' topLane' leftGround' bottomLane'
+| ! rightLane' ! | | | | | |  pickup'  stop' leftLane' topLane' leftGround' bottomLane' rightGround'
+| ! leftLane' ! | | | | | |  pickup'  stop' rightLane' topLane' leftGround' bottomLane' rightGround'
+| ! topLane' ! | | | | | |  pickup'  stop' rightLane' leftLane' leftGround' bottomLane' rightGround'
+| ! leftGround' ! | | | | | |  pickup'  stop' rightLane' leftLane' topLane' bottomLane' rightGround'
+| ! bottomLane' ! | | | | | |  pickup'  stop' rightLane' leftLane' topLane' leftGround' rightGround'
+| ! rightGround' ! | | | | | |  pickup'  stop' rightLane' leftLane' topLane' leftGround' bottomLane'
+| ! pickup' ! | | | | | |  stop' rightLane' leftLane' topLane' leftGround' rightGround' bottomLane'
+| ! stop' ! | | | | | |   pickup' rightLane' leftLane' topLane' leftGround' rightGround' bottomLane'
+
+| | | | | | | & & & & & & & pickup ! stop ! topLane ! rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup stop ! topLane ! rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop topLane ! rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane ! bottomLane leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane ! bottomLane ! leftLane leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane ! bottomLane ! leftLane ! leftGround rightGround
+
+[SYS_LIVENESS]
+| ! holdingObject & rightGround rightGround_rc
+| ! ! holdingObject & topLane topLane_rc
+| ! ! holdingObject & rightLane rightLane_rc
+| ! ! holdingObject & bottomLane bottomLane_rc
+| ! ! holdingObject & leftLane leftLane_rc
+
+[SYS_INIT]
+topLane
+| | | | | | | & & & & & & & pickup ! stop ! topLane ! rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup stop ! topLane ! rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop topLane ! rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane rightLane ! bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane bottomLane ! leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane ! bottomLane leftLane ! leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane ! bottomLane ! leftLane leftGround ! rightGround & & & & & & & ! pickup ! stop ! topLane ! rightLane ! bottomLane ! leftLane ! leftGround rightGround

@@ -1,0 +1,240 @@
+inputs:
+  object:
+    node : '/move_group_and_move_base/inputs/object'
+    node_publish_topic : '/move_group_and_move_base/inputs/object'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no : 0
+      tag_found_topic: '/tag_found'
+
+  pickup_ac:
+    node : '/pickup_ac'
+    node_publish_topic : '/move_group_and_move_base/inputs/pickup_ac'
+    pkg : 'controller_executor'
+    filename : 'forward_info_sensor.py'
+    parameters :
+      sensor_topic : '/move_group_and_move_base/outputs/pickup_status'
+      topic_type : 'std_msgs.msg.Bool'
+
+  drop_ac:
+    node : '/drop_ac'
+    node_publish_topic : '/move_group_and_move_base/inputs/drop_ac'
+    pkg : 'controller_executor'
+    filename : 'forward_info_sensor.py'
+    parameters :
+      sensor_topic : '/move_group_and_move_base/outputs/drop_status'
+      topic_type : 'std_msgs.msg.Bool'
+
+  rightLane_rc:
+    node : '/move_group_and_move_base/inputs/rightLane_rc'
+    node_publish_topic : '/move_group_and_move_base/inputs/rightLane_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'rightLane'
+
+  leftLane_rc:
+    node : '/move_group_and_move_base/inputs/leftLane_rc'
+    node_publish_topic : '/move_group_and_move_base/inputs/leftLane_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'leftLane'
+
+  topLane_rc :
+    node : '/move_group_and_move_base/inputs/topLane_rc'
+    node_publish_topic : '/move_group_and_move_base/inputs/topLane_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'topLane'
+
+  leftGround_rc:
+    node : '/move_group_and_move_base/inputs/leftGround_rc'
+    node_publish_topic : '/move_group_and_move_base/inputs/leftGround_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'leftGround'
+
+  bottomLane_rc:
+    node : '/move_group_and_move_base/inputs/bottomLane_rc'
+    node_publish_topic : '/move_group_and_move_base/inputs/bottomLane_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'bottomLane'
+
+  rightGround_rc:
+    node : '/move_group_and_move_base/inputs/rightGround_rc'
+    node_publish_topic : '/move_group_and_move_base/inputs/rightGround_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'rightGround'
+
+outputs:
+  pickup:
+    node : '/pickup'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/pickup'
+    pkg : 'controller_executor'
+    filename : 'reach_tag_and_plan_manipulator_path.py'
+    parameters :
+      group_name : 'arm_1'
+      target_pose : "'[0.45, 0.0, 0.10, 0,1, 0, 0]'"
+      velocity_topic: '/cmd_vel'
+      sensor_topic: /tag_detections
+      target_tag_no: 0
+
+  drop:
+    node : '/drop'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/drop'
+    pkg : 'controller_executor'
+    filename : 'plan_manipulator_path.py'
+    parameters :
+      group_name : 'arm_1'
+      target_pose_topic : "''"
+      target_pose: "'[0.0, 0.15, 0.17, 0,1, 0, 0]'"
+      z_offset: 0.0
+
+  stop:
+    node : '/move_group_and_move_base/outputs/stop'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/stop'
+    pkg : 'controller_executor'
+    filename : 'set_velocity.py'
+    parameters :
+      publish_topic : '/cmd_vel'
+
+  holdingObject:
+    node : '/move_group_and_move_base/outputs/holdingObject'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/holdingObject'
+    pkg : 'controller_executor'
+    filename : 'dummy_actuator.py'
+
+  sawObject:
+    node : '/move_group_and_move_base/outputs/sawObject'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/sawObject'
+    pkg : 'controller_executor'
+    filename : 'dummy_actuator.py'
+
+  rightLane:
+    node : '/move_group_and_move_base/outputs/rightLane'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/rightLane'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'rightLane'
+      input_namespace : '/move_group_and_move_base'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/'
+      image_basename: 'lab_loop'
+      region_list: 'topLane bottomLane leftLane rightLane leftGround rightGround'
+      occupied_thresh : 70
+      free_thresh : 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/lab_loop.json'
+      rot : 0
+      scale : 0.005
+      x_trans : -0.82
+      y_trans : -1.250
+
+  leftLane :
+    node : '/move_group_and_move_base/outputs/leftLane'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/leftLane'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'leftLane'
+      input_namespace : '/move_group_and_move_base'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/'
+      image_basename: 'lab_loop'
+      region_list: 'topLane bottomLane leftLane rightLane leftGround rightGround'
+      occupied_thresh : 70
+      free_thresh : 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/lab_loop.json'
+      rot : 0
+      scale : 0.005
+      x_trans : -0.82
+      y_trans : -1.250
+
+  topLane :
+    node : '/move_group_and_move_base/outputs/topLane'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/topLane'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'topLane'
+      input_namespace : '/move_group_and_move_base'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/'
+      image_basename: 'lab_loop'
+      region_list: 'topLane bottomLane leftLane rightLane leftGround rightGround'
+      occupied_thresh : 70
+      free_thresh : 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/lab_loop.json'
+      rot : 0
+      scale : 0.005
+      x_trans : -0.82
+      y_trans : -1.250
+
+  leftGround:
+    node : '/move_group_and_move_base/outputs/leftGround'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/leftGround'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'leftGround'
+      input_namespace : '/move_group_and_move_base'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/'
+      image_basename: 'lab_loop'
+      region_list: 'topLane bottomLane leftLane rightLane leftGround rightGround'
+      occupied_thresh : 70
+      free_thresh : 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/lab_loop.json'
+      rot : 0
+      scale : 0.005
+      x_trans : -0.82
+      y_trans : -1.250
+
+  bottomLane:
+    node : '/move_group_and_move_base/outputs/bottomLane'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/bottomLane'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'bottomLane'
+      input_namespace : '/move_group_and_move_base'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/'
+      image_basename: 'lab_loop'
+      region_list: 'topLane bottomLane leftLane rightLane leftGround rightGround'
+      occupied_thresh : 70
+      free_thresh : 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/lab_loop.json'
+      rot : 0
+      scale : 0.005
+      x_trans : -0.82
+      y_trans : -1.250
+
+  rightGround:
+    node : '/move_group_and_move_base/outputs/rightGround'
+    node_subscribe_topic : '/move_group_and_move_base/outputs/rightGround'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'rightGround'
+      input_namespace : '/move_group_and_move_base'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/'
+      image_basename: 'lab_loop'
+      region_list: 'topLane bottomLane leftLane rightLane leftGround rightGround'
+      occupied_thresh : 70
+      free_thresh : 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/lab_loop.json'
+      rot : 0
+      scale : 0.005
+      x_trans : -0.82
+      y_trans : -1.250

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+
+    <!-- find current region -->
+    <node args="robot_current_region --model_name youbot --scale 0.005 --rot 0 --json_file /home/catherinewong/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/regions/lab_loop.json --x_trans -0.82 --y_trans -1.250 --mode /vicon/KUKAyouBot2/main_body" name="robot_current_region" pkg="controller_executor" type="robot_location.py" />
+
+    <!-- ########## move_group ############ -->
+    <arg default="true" name="debug" />
+    <!-- launch move_group for youbot -->
+    <include file="$(find youbot_moveit)/launch/move_group.launch" >
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="publish_monitored_planning_scene" value="true"/>
+    </include>
+
+    <!-- ######### move_base ############### -->
+    <!-- This comes from move_base_local of youbot_navigation -->
+    <!--<include file="$(find youbot_navigation_local)/launch/move_base_local.launch" /> -->
+
+        <!-- Throttle the voxel grid that is being published for rviz -->
+   <!-- <node ns="move_base_node/local_costmap" name="voxel_grid_throttle" pkg="topic_tools" type="throttle" args="messages voxel_grid 3.0 voxel_grid_throttled" /> -->
+
+</launch>

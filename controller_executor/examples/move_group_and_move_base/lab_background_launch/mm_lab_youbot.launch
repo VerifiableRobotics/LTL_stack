@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="image_rect" default="/camera/rgb/image_raw"/>
+    <arg name="camera_info" default="/camera/rgb/camera_info"/>
+
+    <!-- launch youbot camera -->
+    <include file="$(find openni2_launch)/launch/openni2.launch" />
+
+    <!-- launch april tags -->
+    <node pkg="apriltags_ros" type="apriltag_detector_node" name="apriltag_detector" args="_image_transport:=compressed" output="screen">
+        <!-- Remap topic required by the node to custom topics -->
+        <remap from="image_rect" to="$(arg image_rect)" />
+        <remap from="camera_info" to="$(arg camera_info)" />
+
+        <!-- Optional: Subscribe to the compressed stream-->
+        <!-- <param name="image_transport" type="str" value="compressed" /> -->
+
+        <!-- Describe the tags -->
+        <!-- {id: 0, size: 0.163513, frame_id: tag_0}, -->
+
+         <rosparam param="tag_descriptions">[
+          {id: 0, size: 0.041, frame_id: tag_0},
+          {id: 1, size: 0.041, frame_id: tag_1},
+          {id: 2, size: 0.041, frame_id: tag_2},
+          {id: 3, size: 0.041, frame_id: tag_3},
+          {id: 4, size: 0.041, frame_id: tag_4},
+          {id: 5, size: 0.041, frame_id: tag_5}]
+        </rosparam>
+  </node>
+
+  <!-- static transform for camera -->
+  <node pkg="tf" type="static_transform_publisher" name="camera_broadcaster" args="0 0.05 0 0 0 0 base_laser_front_link camera_link 100" />
+
+  <!-- publishing scan -->
+  <remap from="scan" to="base_scan"/>
+  <arg name="image" default="camera/depth/image_raw"/>
+  <node name="depthimage_to_laserscan" pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" args="image:=$(arg image) _image_transport:=compressedDepth"/>
+
+  <!-- ######################################################### -->
+  <!-- launch youbot driver (REMAPPED ODOM)-->
+  <!--<include file="$(find youbot_driver_ros_interface)/launch/youbot_driver.launch" />-->
+  <!-- Set relevant parameters. -->
+  <param name="youBotHasBase" type="bool" value="true"/>
+  <param name="youBotHasArms" type="bool" value="true"/>
+  <param name="youBotDriverCycleFrequencyInHz" type="double" value="50.0"/>
+  <param name="youBotConfigurationFilePath" type="string" value="$(find youbot_driver)/config"/>
+
+  <param name="trajectoryActionServerEnable" type="bool" value="true"/>
+  <param name="trajectoryPositionGain" type="double" value="5.0"/>
+  <param name="trajectoryVelocityGain" type="double" value="0.0"/>
+
+  <!--
+    Initialize youBot arms by name. Each named arm must have a matching config
+    file. For example, the entry:
+      <param name="youBotArmName1" type="str" value="MyArm"/>
+    will attempt to initialize an arm using the config file "MyArm.cfg" in your
+    default configuration path.
+
+    To initialize multiple arms, simply define parameters naming each of them,
+    beginning with the parameter "youBotArmName1", then "youBotArmName2", etc.
+  -->
+
+  <!-- Default name values -->
+  <param name="youBotBaseName" type="str" value="youbot-base"/>
+  <param name="youBotArmName1" type="str" value="youbot-manipulator"/>
+
+
+  <!-- Start the driver. NOTE: Every joint topic is mapped to armName/joint_states -->
+  <node name="youbot_driver" pkg="youbot_driver_ros_interface" type="youbot_driver_ros_interface" output="screen">
+    <remap from="base/joint_states" to="/joint_states"/>
+    <remap from="arm_1/joint_states" to="/joint_states"/>
+    <remap from="odom" to="odom_youbot_unused"/>
+  </node>
+
+  <!-- upoad URDF model to the parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find youbot_description)/robots/youbot.urdf.xacro'"/>
+
+  <!-- start robot_state_publisher -->
+  <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher" output="screen"/>
+
+
+</launch>

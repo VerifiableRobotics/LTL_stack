@@ -1,0 +1,14 @@
+slugsin_file : '/home/catherine/LTLMoP/src/examples/actuations/move_group_and_move_base/move_group_and_move_base.slugsin'
+region_file : '/home/catherine/LTLMoP/src/examples/actuations/move_group_and_move_base/lab_loop.regions'
+destination_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base'
+example_name : 'move_group_and_move_base'
+yaml_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/move_group_and_move_base.yaml'
+LTLMoP_src_dir : '/home/catherine/LTLMoP/src'
+controller_executor_dir : '/home/catherine/LTLROS_ws/src/controller_executor'
+init_region : 'topLane'
+rot : 0
+scale : 0.005
+x_trans : -0.82
+y_trans : -1.250
+
+#rosrun controller_executor setup_launch_file_with_yaml.py  /home/catherine/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/setup_launch_move_group_and_move_base.yaml

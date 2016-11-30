@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch> 
+    <!-- publish odom with vicon data -->
+    <node name="odometry_publisher" pkg="controller_executor" type="vicon_to_nav_odom.py" args="vicon/KUKAyouBot2/main_body"/>
+
+    <!--vicon -->
+    <node pkg="tf" type="static_transform_publisher" name="vicon_to_odom_broadcaster" args="0 0 0 0.4 0 0 vicon/KUKAyouBot2/main_body base_footprint 100" />
+
+    <node pkg="vicon_bridge" type="vicon_bridge" name="vicon" output="screen">
+        <param name="stream_mode" value="ClientPull" type="str" />
+        <param name="datastream_hostport" value="128.84.189.209" type="str"/>
+        <param name="tf_ref_frame_id" value="odom" type="str" />
+    </node>
+
+    <!-- from map to world -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_world_broadcaster" args="0 0 0 0 0 0 1 map odom 100" />
+</launch>

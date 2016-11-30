@@ -1,0 +1,6 @@
+== Execution ==
+1. Launch all packages in either the lab_background_launch folder or the simulation_background_launch folder
+2. Launch move_group_and_move_base_executor.launch
+3. Launch move_group_and_move_base_propositions.launch
+
+You are good to go!

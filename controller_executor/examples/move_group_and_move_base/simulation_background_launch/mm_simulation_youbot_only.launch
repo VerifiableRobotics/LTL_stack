@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+    
+    <arg default="0.0" name="init_pos_x" />
+    <arg default="1.5" name="init_pos_y" />
+    <arg default="0" name="init_pos_z" />
+    <arg default="0" name="init_roll" />
+    <arg default="0" name="init_pitch" />
+    <arg default="0" name="init_yaw" />
+
+    <arg default="0.0" name="delta_x" />
+    <arg default="-1.5" name="delta_y" />
+    <arg default="0.0" name="delta_yaw" />
+
+    <arg default="true" name="gui" />
+    
+    <include file="$(find youbot_gazebo_robot)/launch/youbot.launch">
+        <arg name="world" value="empty_world" />
+        <arg name="init_pos_x" value="$(arg init_pos_x)" />
+        <arg name="init_pos_y" value="$(arg init_pos_y)" />
+        <arg name="init_pos_z" value="$(arg init_pos_z)" />
+        <arg name="init_roll" value="$(arg init_roll)" />
+        <arg name="init_pitch" value="$(arg init_pitch)" />
+        <arg name="init_yaw" value="$(arg init_yaw)" />
+        <arg name="gui" value="$(arg gui)" />
+    </include>
+
+
+</launch>
