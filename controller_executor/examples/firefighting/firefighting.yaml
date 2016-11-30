@@ -1,0 +1,205 @@
+inputs:
+  person :
+    node : '/firefighting/inputs/person'
+    node_publish_topic : '/firefighting/inputs/person'
+    pkg : 'controller_executor'
+    filename : 'tk_button.py'
+    parameters :
+      init_value : False
+
+  radio_ac :
+    node : '/firefighting/inputs/radio_ac'
+    node_publish_topic : '/firefighting/inputs/radio_ac'
+    pkg : 'controller_executor'
+    filename : 'tk_button.py'
+    parameters :
+      init_value : False
+
+  kitchen_rc :
+    node : '/firefighting/inputs/kitchen_rc'
+    node_publish_topic : '/firefighting/inputs/kitchen_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'kitchen'
+
+  porch_rc :
+    node : '/firefighting/inputs/porch_rc'
+    node_publish_topic : '/firefighting/inputs/porch_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'porch'
+
+  deck_rc :
+    node : '/firefighting/inputs/deck_rc'
+    node_publish_topic : '/firefighting/inputs/deck_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'deck'
+
+  bedroom_rc :
+    node : '/firefighting/inputs/bedroom_rc'
+    node_publish_topic : '/firefighting/inputs/bedroom_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'bedroom'
+
+  dining_rc :
+    node : '/firefighting/inputs/dining_rc'
+    node_publish_topic : '/firefighting/inputs/dining_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'dining'
+
+  living_rc :
+    node : '/firefighting/inputs/living_rc'
+    node_publish_topic : '/firefighting/inputs/living_rc'
+    pkg : 'controller_executor'
+    filename : 'is_robot_at_location.py'
+    parameters :
+      robot_location_topic : '/robot_current_region'
+      region_in_consideration: 'living'
+
+outputs:
+  radio :
+    node : '/firefighting/outputs/radio'
+    node_subscribe_topic : '/firefighting/outputs/radio'
+    pkg : 'controller_executor'
+    filename : 'dummy_actuator.py'
+
+  carrying_item :
+    node : '/firefighting/outputs/carrying_item'
+    node_subscribe_topic : '/firefighting/outputs/carrying_item'
+    pkg : 'controller_executor'
+    filename : 'dummy_actuator.py'
+
+  stay_in_place :
+    node : '/firefighting/outputs/stay_in_place'
+    node_subscribe_topic : '/firefighting/outputs/stay_in_place'
+    pkg : 'controller_executor'
+    filename : 'set_velocity.py'
+    parameters :
+      publish_topic : '/mobile_base/commands/velocity'
+
+  kitchen :
+    node : '/firefighting/outputs/kitchen'
+    node_subscribe_topic : '/firefighting/outputs/kitchen'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'kitchen'
+      input_namespace : '/firefighting'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/'
+      image_basename: 'floorplan'
+      region_list: 'kitchen porch bedroom dining deck living'
+      occupied_thresh : 70
+      free_thresh : 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json'
+      rot : 0
+      scale : 0.01
+      x_trans : 0
+      y_trans : 0
+
+  porch :
+    node : '/firefighting/outputs/porch'
+    node_subscribe_topic : '/firefighting/outputs/porch'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'porch'
+      input_namespace : '/firefighting'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/'
+      image_basename: 'floorplan'
+      region_list: 'kitchen porch bedroom dining deck living'
+      occupied_thresh: 70
+      free_thresh: 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json'
+      rot : 0
+      scale : 0.01
+      x_trans : 0
+      y_trans : 0
+
+  deck :
+    node : '/firefighting/outputs/deck'
+    node_subscribe_topic : '/firefighting/outputs/deck'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'deck'
+      input_namespace : '/firefighting'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/'
+      image_basename: 'floorplan'
+      region_list: 'kitchen porch bedroom dining deck living'
+      occupied_thresh: 70
+      free_thresh: 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json'
+      rot : 0
+      scale : 0.01
+      x_trans : 0
+      y_trans : 0
+
+  bedroom :
+    node : '/firefighting/outputs/bedroom'
+    node_subscribe_topic : '/firefighting/outputs/bedroom'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'bedroom'
+      input_namespace : '/firefighting'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/'
+      image_basename: 'floorplan'
+      region_list: 'kitchen porch bedroom dining deck living'
+      occupied_thresh: 70
+      free_thresh: 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json'
+      rot : 0
+      scale : 0.01
+      x_trans : 0
+      y_trans : 0
+
+  dining :
+    node : '/firefighting/outputs/dining'
+    node_subscribe_topic : '/firefighting/outputs/dining'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'dining'
+      input_namespace : '/firefighting'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/'
+      image_basename: 'floorplan'
+      region_list: 'kitchen porch bedroom dining deck living'
+      occupied_thresh: 70
+      free_thresh: 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json'
+      rot : 0
+      scale : 0.01
+      x_trans : 0
+      y_trans : 0
+
+  living :
+    node : '/firefighting/outputs/living'
+    node_subscribe_topic : '/firefighting/outputs/living'
+    pkg : 'controller_executor'
+    filename : 'robot_navigation.py'
+    parameters :
+      next_region : 'living'
+      input_namespace : '/firefighting'
+      image_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/'
+      image_basename: 'floorplan'
+      region_list: 'kitchen porch bedroom dining deck living'
+      occupied_thresh: 70
+      free_thresh: 20
+      json_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json'
+      rot : 0
+      scale : 0.01
+      x_trans : 0
+      y_trans : 0

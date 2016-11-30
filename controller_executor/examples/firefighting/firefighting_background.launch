@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+    
+    <arg default="1.785" name="x" />
+    <arg default="3.315" name="y" />
+    <arg default="0" name="z" />
+    <arg default="0" name="roll" />
+    <arg default="0" name="pitch" />
+    <arg default="0" name="yaw" />
+
+    <arg default="-1.785" name="delta_x" />  
+    <arg default="-3.315" name="delta_y" />  
+    <arg default="0.0" name="delta_yaw" />
+
+    <arg default="true" name="gui" />
+
+    
+    <include file="$(find controller_executor)/examples/fullregion_firefighting_fastslow_nav_stack/turtlebot_world.launch">
+        <arg name="world_file" value="worlds/empty.world" />
+        <arg name="x" value="$(arg x)" />
+        <arg name="y" value="$(arg y)" />
+        <arg name="z" value="$(arg z)" />
+        <arg name="roll" value="$(arg roll)" />
+        <arg name="pitch" value="$(arg pitch)" />
+        <arg name="yaw" value="$(arg yaw)" />
+        <arg name="gui" value="$(arg gui)" />
+    </include>
+
+    
+    <include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch" />
+
+    
+    
+    <node clear_params="true" name="fake_localization" output="screen" pkg="fake_localization" type="fake_localization">
+        <remap from="base_pose_ground_truth" to="odom" />
+        <param name="global_frame_id" value="map" />
+        <param name="base_frame_id" value="base_footprint" />
+        <param name="delta_x" value="$(arg delta_x)" />
+        <param name="delta_y" value="$(arg delta_y)" />
+        <param name="delta_yaw" value="$(arg delta_yaw)" />
+    </node>
+
+    
+    <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml" />
+
+    
+    <node args="mobile_base_pose /mobile_base/pose mobile_base" name="mobile_base_pose" pkg="controller_executor" type="forward_pose.py" />
+
+<node args="robot_current_region --model_name mobile_base --scale 0.01 --rot 0 --json_file /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json --x_trans 0 --y_trans 0" name="robot_current_region" pkg="controller_executor" type="robot_location.py" /></launch>

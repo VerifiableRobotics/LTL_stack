@@ -1,0 +1,14 @@
+slugsin_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting.slugsin'
+region_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.regions'
+destination_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting'
+example_name : 'firefighting'
+yaml_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting.yaml'
+LTLMoP_src_dir : '/home/catherine/LTLMoP/src'
+controller_executor_dir : '/home/catherine/LTLROS_ws/src/controller_executor'
+init_region : 'porch'
+rot : 0
+scale : 0.01
+x_trans : 0
+y_trans : 0
+
+#rosrun controller_executor setup_launch_file_with_yaml.py  /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/setup_launch_firefighting.yaml

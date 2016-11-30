@@ -1,0 +1,94 @@
+[INPUT]
+person
+radio_ac
+#stay_in_place_ac
+kitchen_rc
+porch_rc
+deck_rc
+bedroom_rc
+dining_rc
+living_rc
+
+[OUTPUT]
+radio
+stay_in_place
+carrying_item
+kitchen
+porch
+deck
+bedroom
+dining
+living
+
+[ENV_TRANS]
+| ! & kitchen_rc kitchen kitchen_rc'
+| ! & porch_rc porch porch_rc'
+| ! & deck_rc deck deck_rc'
+| ! & bedroom_rc bedroom bedroom_rc'
+| ! & dining_rc dining dining_rc'
+| ! & living_rc living living_rc'
+| ! & kitchen_rc porch | kitchen_rc' porch_rc'
+| ! & kitchen_rc deck | kitchen_rc' deck_rc'
+| ! & kitchen_rc dining | kitchen_rc' dining_rc'
+| ! & porch_rc kitchen | porch_rc' kitchen_rc'
+| ! & porch_rc living | porch_rc' living_rc'
+| ! & deck_rc kitchen | deck_rc' kitchen_rc'
+| ! & deck_rc bedroom | deck_rc' bedroom_rc'
+| ! & bedroom_rc deck | bedroom_rc' deck_rc'
+| ! & bedroom_rc living | bedroom_rc' living_rc'
+| ! & dining_rc kitchen | dining_rc' kitchen_rc'
+| ! & dining_rc living | dining_rc' living_rc'
+| ! & living_rc porch | living_rc' porch_rc'
+| ! & living_rc bedroom | living_rc' bedroom_rc'
+| ! & living_rc dining | living_rc' dining_rc'
+| & ! kitchen_rc' ! ! | | | | porch_rc' deck_rc' bedroom_rc' dining_rc' living_rc' & kitchen_rc' ! | | | | porch_rc' deck_rc' bedroom_rc' dining_rc' living_rc'
+| & ! porch_rc' ! ! | | | | kitchen_rc' deck_rc' bedroom_rc' dining_rc' living_rc' & porch_rc' ! | | | | kitchen_rc' deck_rc' bedroom_rc' dining_rc' living_rc'
+| & ! deck_rc' ! ! | | | | kitchen_rc' porch_rc' bedroom_rc' dining_rc' living_rc' & deck_rc' ! | | | | kitchen_rc' porch_rc' bedroom_rc' dining_rc' living_rc'
+| & ! bedroom_rc' ! ! | | | | kitchen_rc' porch_rc' deck_rc' dining_rc' living_rc' & bedroom_rc' ! | | | | kitchen_rc' porch_rc' deck_rc' dining_rc' living_rc'
+| & ! dining_rc' ! ! | | | | kitchen_rc' porch_rc' deck_rc' bedroom_rc' living_rc' & dining_rc' ! | | | | kitchen_rc' porch_rc' deck_rc' bedroom_rc' living_rc'
+| & ! living_rc' ! ! | | | | kitchen_rc' porch_rc' deck_rc' bedroom_rc' dining_rc' & living_rc' ! | | | | kitchen_rc' porch_rc' deck_rc' bedroom_rc' dining_rc'
+| ! & radio_ac radio radio_ac'
+| ! & ! radio_ac ! radio ! radio_ac'
+#| ! & stay_in_place_ac stay_in_place stay_in_place_ac'
+#| ! & ! stay_in_place_ac ! stay_in_place ! stay_in_place_ac'
+| | | | | & & & & & kitchen_rc' ! porch_rc' ! deck_rc' ! bedroom_rc' ! dining_rc' ! living_rc' & & & & & ! kitchen_rc' porch_rc' ! deck_rc' ! bedroom_rc' ! dining_rc' ! living_rc' & & & & & ! kitchen_rc' ! porch_rc' deck_rc' ! bedroom_rc' ! dining_rc' ! living_rc' & & & & & ! kitchen_rc' ! porch_rc' ! deck_rc' bedroom_rc' ! dining_rc' ! living_rc' & & & & & ! kitchen_rc' ! porch_rc' ! deck_rc' ! bedroom_rc' dining_rc' ! living_rc' & & & & & ! kitchen_rc' ! porch_rc' ! deck_rc' ! bedroom_rc' ! dining_rc' living_rc'
+
+[ENV_LIVENESS]
+| | | | | | | | | | | & kitchen kitchen_rc' & kitchen ! kitchen' & porch porch_rc' & porch ! porch' & deck deck_rc' & deck ! deck' & bedroom bedroom_rc' & bedroom ! bedroom' & dining dining_rc' & dining ! dining' & living living_rc' & living ! living'
+#| | | | | | | & radio radio_ac' & ! radio ! radio_ac' & radio ! radio' & ! radio radio' & stay_in_place stay_in_place_ac' & ! stay_in_place ! stay_in_place_ac' & stay_in_place ! stay_in_place' & ! stay_in_place stay_in_place'
+| | | & radio radio_ac' & ! radio ! radio_ac' & radio ! radio' & ! radio radio'
+
+[ENV_INIT]
+porch_rc
+| | | | | & & & & & kitchen_rc ! porch_rc ! deck_rc ! bedroom_rc ! dining_rc ! living_rc & & & & & ! kitchen_rc porch_rc ! deck_rc ! bedroom_rc ! dining_rc ! living_rc & & & & & ! kitchen_rc ! porch_rc deck_rc ! bedroom_rc ! dining_rc ! living_rc & & & & & ! kitchen_rc ! porch_rc ! deck_rc bedroom_rc ! dining_rc ! living_rc & & & & & ! kitchen_rc ! porch_rc ! deck_rc ! bedroom_rc dining_rc ! living_rc & & & & & ! kitchen_rc ! porch_rc ! deck_rc ! bedroom_rc ! dining_rc living_rc
+
+[SYS_TRANS]
+| & ! person' ! radio' & person' radio'
+| ! radio' stay_in_place'
+#& & & & & & & & & & & & & & ! & kitchen porch ! & kitchen deck ! & kitchen bedroom ! & kitchen dining ! & kitchen living ! & porch deck ! & porch bedroom ! & porch dining ! & porch living ! & deck bedroom ! & deck dining ! & deck living ! & bedroom dining ! & bedroom living ! & dining living
+| ! kitchen_rc' | | | kitchen' porch' deck' dining'
+| ! porch_rc' | | porch' kitchen' living'
+| ! deck_rc' | | deck' kitchen' bedroom'
+| ! bedroom_rc' | | bedroom' deck' living'
+| ! dining_rc' | | dining' kitchen' living'
+| ! living_rc' | | | living' porch' bedroom' dining'
+| ! kitchen' ! | | | | porch' deck' bedroom' dining' living'
+| ! porch' ! | | | | kitchen' deck' bedroom' dining' living'
+| ! deck' ! | | | | kitchen' porch' bedroom' dining' living'
+| ! bedroom' ! | | | | kitchen' porch' deck' dining' living'
+| ! dining' ! | | | | kitchen' porch' deck' bedroom' living'
+| ! living' ! | | | | kitchen' porch' deck' bedroom' dining'
+#| | | | | & & & & & kitchen ! porch ! deck ! bedroom ! dining ! living & & & & & ! kitchen porch ! deck ! bedroom ! dining ! living & & & & & ! kitchen ! porch deck ! bedroom ! dining ! living & & & & & ! kitchen ! porch ! deck bedroom ! dining ! living & & & & & ! kitchen ! porch ! deck ! bedroom dining ! living & & & & & ! kitchen ! porch ! deck ! bedroom ! dining living
+
+[SYS_LIVENESS]
+| ! ! radio & living living_rc
+| ! ! radio & bedroom bedroom_rc
+| ! ! radio & deck deck_rc
+| ! ! radio & kitchen kitchen_rc
+| ! ! radio & dining dining_rc
+| ! ! radio & porch porch_rc
+
+[SYS_INIT]
+porch
+#| | | | | & & & & & kitchen ! porch ! deck ! bedroom ! dining ! living & & & & & ! kitchen porch ! deck ! bedroom ! dining ! living & & & & & ! kitchen ! porch deck ! bedroom ! dining ! living & & & & & ! kitchen ! porch ! deck bedroom ! dining ! living & & & & & ! kitchen ! porch ! deck ! bedroom dining ! living & & & & & ! kitchen ! porch ! deck ! bedroom ! dining living
+

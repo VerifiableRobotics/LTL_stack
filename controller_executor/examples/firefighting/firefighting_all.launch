@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+
+    
+    <arg default="true" name="run_executor" />
+    <arg default="true" name="run_monitor" />
+    <arg default="true" name="run_executor_button" />
+
+    <arg default="firefighting" name="example_name" />
+    <arg default="/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting.yaml" name="yaml_file" />
+    <arg default="/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting.slugsin" name="slugsin_file" />
+
+    
+    <include file="/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting_background.launch" />
+
+    
+    <include file="/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting_propositions.launch" />
+
+    
+    <include file="/home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/firefighting_executor.launch" if="$(arg run_executor)">
+      <arg default="$(arg run_executor_button)" name="run_executor_button" />
+      <arg name="run_monitor" value="$(arg run_monitor)" />
+      <arg name="example_name" value="$(arg example_name)" />
+      <arg name="yaml_file" value="$(arg yaml_file)" />
+      <arg name="slugsin_file" value="$(arg slugsin_file)" />
+    </include>
+
+</launch>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+	<group ns="firefighting">
+		<group ns="inputs">
+			<node name="porch_rc" pkg="controller_executor" type="is_robot_at_location.py" args="porch_rc /firefighting/inputs/porch_rc --region_in_consideration porch --robot_location_topic /robot_current_region" />
+			<node name="radio_ac" pkg="controller_executor" type="tk_button.py" args="radio_ac /firefighting/inputs/radio_ac --init_value False" />
+			<node name="kitchen_rc" pkg="controller_executor" type="is_robot_at_location.py" args="kitchen_rc /firefighting/inputs/kitchen_rc --region_in_consideration kitchen --robot_location_topic /robot_current_region" />
+			<node name="living_rc" pkg="controller_executor" type="is_robot_at_location.py" args="living_rc /firefighting/inputs/living_rc --region_in_consideration living --robot_location_topic /robot_current_region" />
+			<node name="person" pkg="controller_executor" type="tk_button.py" args="person /firefighting/inputs/person --init_value False" />
+			<node name="bedroom_rc" pkg="controller_executor" type="is_robot_at_location.py" args="bedroom_rc /firefighting/inputs/bedroom_rc --region_in_consideration bedroom --robot_location_topic /robot_current_region" />
+			<node name="deck_rc" pkg="controller_executor" type="is_robot_at_location.py" args="deck_rc /firefighting/inputs/deck_rc --region_in_consideration deck --robot_location_topic /robot_current_region" />
+			<node name="dining_rc" pkg="controller_executor" type="is_robot_at_location.py" args="dining_rc /firefighting/inputs/dining_rc --region_in_consideration dining --robot_location_topic /robot_current_region" />
+		</group>
+		<group ns="outputs">
+			<node name="living" pkg="controller_executor" type="robot_navigation.py" args="living /firefighting/outputs/living --input_namespace /firefighting --region_list kitchen porch bedroom dining deck living --occupied_thresh 70 --next_region living --json_file /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json --x_trans 0 --y_trans 0 --image_basename floorplan --scale 0.01 --free_thresh 20 --rot 0 --image_folder /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/" />
+			<node name="carrying_item" pkg="controller_executor" type="dummy_actuator.py" args="carrying_item /firefighting/outputs/carrying_item " />
+			<node name="porch" pkg="controller_executor" type="robot_navigation.py" args="porch /firefighting/outputs/porch --input_namespace /firefighting --region_list kitchen porch bedroom dining deck living --occupied_thresh 70 --next_region porch --json_file /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json --x_trans 0 --y_trans 0 --image_basename floorplan --scale 0.01 --free_thresh 20 --rot 0 --image_folder /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/" />
+			<node name="deck" pkg="controller_executor" type="robot_navigation.py" args="deck /firefighting/outputs/deck --input_namespace /firefighting --region_list kitchen porch bedroom dining deck living --occupied_thresh 70 --next_region deck --json_file /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json --x_trans 0 --y_trans 0 --image_basename floorplan --scale 0.01 --free_thresh 20 --rot 0 --image_folder /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/" />
+			<node name="dining" pkg="controller_executor" type="robot_navigation.py" args="dining /firefighting/outputs/dining --input_namespace /firefighting --region_list kitchen porch bedroom dining deck living --occupied_thresh 70 --next_region dining --json_file /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json --x_trans 0 --y_trans 0 --image_basename floorplan --scale 0.01 --free_thresh 20 --rot 0 --image_folder /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/" />
+			<node name="radio" pkg="controller_executor" type="dummy_actuator.py" args="radio /firefighting/outputs/radio " />
+			<node name="stay_in_place" pkg="controller_executor" type="set_velocity.py" args="stay_in_place /firefighting/outputs/stay_in_place --publish_topic /mobile_base/commands/velocity" />
+			<node name="bedroom" pkg="controller_executor" type="robot_navigation.py" args="bedroom /firefighting/outputs/bedroom --input_namespace /firefighting --region_list kitchen porch bedroom dining deck living --occupied_thresh 70 --next_region bedroom --json_file /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json --x_trans 0 --y_trans 0 --image_basename floorplan --scale 0.01 --free_thresh 20 --rot 0 --image_folder /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/" />
+			<node name="kitchen" pkg="controller_executor" type="robot_navigation.py" args="kitchen /firefighting/outputs/kitchen --input_namespace /firefighting --region_list kitchen porch bedroom dining deck living --occupied_thresh 70 --next_region kitchen --json_file /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/floorplan.json --x_trans 0 --y_trans 0 --image_basename floorplan --scale 0.01 --free_thresh 20 --rot 0 --image_folder /home/catherine/LTLROS_ws/src/controller_executor/examples/firefighting/regions/" />
+		</group>
+	</group>
+</launch>
