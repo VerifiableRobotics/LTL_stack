@@ -54,7 +54,7 @@ def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_d
 
             # then iterate until we reach the end
             get_subscribed_topics(src_dest_pair[0], prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                                  copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, topic_filtered_list)
+                                  copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, topic_filtered_list, partial_topic_filtered_list)
 
 
 def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
@@ -100,7 +100,7 @@ def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_di
 
             # then iterate until we reach the end
             get_published_topics(src_dest_pair[1], prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                                    copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, topic_filtered_list)
+                                    copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, topic_filtered_list, partial_topic_filtered_list)
 
 ##################################################################################
 # This search is modified from:
@@ -315,7 +315,7 @@ if __name__ == "__main__":
 
     # --- move_group_and_move_base ---- #
     #load dot file
-    dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/move_group_and_move_base/rosgraph.dot'.format(getpass.getuser()))
+    dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/move_group_and_move_base/youbot_lab.dot'.format(getpass.getuser()))
 
     #load inputs and outputs
     input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
