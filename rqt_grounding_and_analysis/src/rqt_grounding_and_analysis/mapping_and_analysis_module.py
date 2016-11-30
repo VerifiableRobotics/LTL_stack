@@ -807,13 +807,29 @@ class PropMappingAndAnalysis(Plugin):
         # first update nodes
         nodes_list = rosnode.get_node_names()
 
+        # filter nodes that does not contain boolean topics
+        nodes_input_list, nodes_output_list = [], []
+        for node_name in nodes_list:
+            if self.check_if_boolean_topic_in_node('input', node_name)[0]:
+                nodes_input_list.append(node_name)
+            if self.check_if_boolean_topic_in_node('output', node_name)[0]:
+                nodes_output_list.append(node_name)
+
+        # populate combo box
         for prop, node_combobox in self._prop_node.iteritems():
 
             # save previous node
             current_node = node_combobox.currentText()
 
             node_combobox.clear() # clear all options before updating
-            node_combobox.addItems(nodes_list)
+
+            # check the type of prop
+            if prop in self._input_props:
+                prop_type = "input"
+                node_combobox.addItems(nodes_input_list)
+            else:
+                prop_type = "output"
+                node_combobox.addItems(nodes_output_list)
 
             # Add in permanent items from loading mapping
             if prop in self._mapping_file_node and \
@@ -824,23 +840,12 @@ class PropMappingAndAnalysis(Plugin):
             if current_node in [node_combobox.itemText(i) for i in range(node_combobox.count())]:
                 node_combobox.setCurrentIndex(node_combobox.findText(current_node))
 
-
-            if prop in self._input_props:
-                prop_type = "input"
-            else:
-                prop_type = "output"
-
             # now update topics
             self.refresh_topics(prop_type, prop, node_combobox)
 
         rospy.loginfo("Refreshed nodes and topics.")
 
-
-    def refresh_topics(self, prop_type, prop, node_object):
-        node_name = node_object.currentText()
-
-        #gui_logger.debug('Refreshed topics for prop {0} and node {1}.'.format(prop, node_name))
-
+    def check_if_boolean_topic_in_node(self, prop_type, node_name):
         def _succeed(args):
             code, msg, val = args
             if code != 1:
@@ -882,6 +887,15 @@ class PropMappingAndAnalysis(Plugin):
             rospy.logerr('This is not input or output?!')
 
         #gui_logger.debug('topic_list:' + str(topic_list))
+
+        return True if topic_list else False, topic_list
+
+
+    def refresh_topics(self, prop_type, prop, node_object):
+        node_name = node_object.currentText()
+
+        # get topic_list
+        _, topic_list = self.check_if_boolean_topic_in_node(prop_type, node_name)
 
         # save previous topic
         current_topic = self._prop_topic[prop].currentText()
