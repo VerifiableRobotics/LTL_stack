@@ -1,0 +1,59 @@
+inputs:
+  person :
+    node : 'person'
+    node_publish_topic : '/simple/inputs/person'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no: 5
+
+  sense_object :
+    node : 'sense_object'
+    node_publish_topic : '/simple/inputs/sense_object'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no: 0
+
+outputs:
+  stop_camera :
+    node : 'stop_camera'
+    node_subscribe_topic : '/simple/outputs/stop_camera'
+    pkg : 'controller_executor'
+    filename : 'start_ros_node.py'
+    parameters :
+      start_node_name : 'uvc_camera'
+      start_node_package : 'uvc_camera'
+      start_node_type : 'uvc_camera_node'
+      toggle_effect: True
+
+  move :
+    node : 'move'
+    node_subscribe_topic : '/simple/outputs/move'
+    pkg : 'controller_executor'
+    filename : 'set_velocity.py'
+    parameters :
+      publish_topic : '/turtle1/cmd_vel'
+      vx : 0
+      vy : 0
+      vz : 0
+      ax : 0
+      ay : 0
+      az : 1
+
+  stop :
+    node : 'stop'
+    node_subscribe_topic : '/simple/outputs/stop'
+    pkg : 'controller_executor'
+    filename : 'set_velocity.py'
+    parameters :
+      publish_topic : '/turtle1/cmd_vel'
+      vx : 0
+      vy : 0
+      vz : 0
+      ax : 0
+      ay : 0
+      az : 0
+

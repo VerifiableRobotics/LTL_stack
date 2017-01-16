@@ -1,0 +1,12 @@
+slugsin_file : '/home/catherine/LTLMoP/src/examples/actuations/simple/simple.slugsin'
+region_file : None
+destination_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/simple'
+example_name : 'simple'
+yaml_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/simple/simple.yaml'
+LTLMoP_src_dir : '/home/catherine/LTLMoP/src'
+controller_executor_dir : '/home/catherine/LTLROS_ws/src/controller_executor'
+init_region : ''
+rot : 0
+scale : 0.01
+x_trans : 0
+y_trans : 0

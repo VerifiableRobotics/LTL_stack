@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+	<group ns="simple">
+		<!--inputs-->
+		<group ns="inputs">
+			<node name="person" pkg="controller_executor" type="get_tag.py" args="person /simple/inputs/person --tag_no 5 --sensor_topic /tag_detections" />
+			<node name="sense_object" pkg="controller_executor" type="get_tag.py" args="sense_object /simple/inputs/sense_object --tag_no 0 --sensor_topic /tag_detections" />
+		</group>
+
+		<!--outputs-->
+		<group ns="outputs">
+			<node name="stop_camera" pkg="controller_executor" type="start_ros_node.py" args="stop_camera /simple/outputs/stop_camera --start_node_name uvc_camera --start_node_package uvc_camera --toggle_effect True --start_node_type uvc_camera_node" />
+			<node name="move" pkg="controller_executor" type="set_velocity.py" args="move /simple/outputs/move --vx 0 --vy 0 --ay 0 --ax 0 --vz 0 --az 1 --publish_topic /turtle1/cmd_vel" />
+			<node name="stop" pkg="controller_executor" type="set_velocity.py" args="stop /simple/outputs/stop --vx 0 --vy 0 --ay 0 --ax 0 --vz 0 --az 0 --publish_topic /turtle1/cmd_vel" />
+		</group>
+	</group>
+</launch>
