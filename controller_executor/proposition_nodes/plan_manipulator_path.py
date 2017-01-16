@@ -59,6 +59,7 @@ class PlanPathAction(object):
         self._plan = None
         self._planning_traj = False
         self.args = args # save arguments for future use
+        self.plot_obj = None
 
         try:
             node_logger.info("===== Waiting for MoveIt! to start ==========================")
@@ -317,11 +318,12 @@ class PlanPathAction(object):
             self._pub_status.publish(False)
 
     def shutdown(self):
-        # save plot
-        node_logger.error('Shutting down.....')
-        self.plot_obj.save_plot()
-        self.file_handle.close()
-        node_logger.error('Done Shutting down.....')
+        if self.plot_obj:
+            # save plot
+            node_logger.error('Shutting down.....')
+            self.plot_obj.save_plot()
+            self.file_handle.close()
+            node_logger.error('Done Shutting down.....')
 
         # clean up moveit
         node_logger.info("===== shutdown: Shutting down moveit! ==================")

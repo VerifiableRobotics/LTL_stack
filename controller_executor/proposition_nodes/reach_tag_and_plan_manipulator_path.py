@@ -302,12 +302,6 @@ class PlanPathAction(object):
             self._pub_status.publish(False)
 
     def shutdown(self):
-        # save plot
-        node_logger.error('Shutting down.....')
-        self.plot_obj.save_plot()
-        self.file_handle.close()
-        node_logger.error('Done Shutting down.....')
-
         # clean up moveit
         node_logger.info("===== shutdown: Shutting down moveit! ==================")
         moveit_commander.roscpp_shutdown()
