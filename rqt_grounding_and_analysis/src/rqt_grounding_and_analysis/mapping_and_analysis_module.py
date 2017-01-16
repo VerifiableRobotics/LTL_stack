@@ -166,7 +166,7 @@ class PropMappingAndAnalysis(Plugin):
 
     def refresh_exclusion_ltl_and_table_selection(self):
         #first check if there are rows and columns in the table:
-        gui_logger.debug("Same Topic Table Row count: {0}".format(self.same_topic_table_model.rowCount()))
+        #gui_logger.debug("Same Topic Table Row count: {0}".format(self.same_topic_table_model.rowCount()))
         if self.same_topic_table_model.rowCount():
             # deselect old one before new ones
             self._tableView_same_topic.clearSelection()
@@ -293,9 +293,9 @@ class PropMappingAndAnalysis(Plugin):
     def populate_ltl_text_edit(self, idx, suggested_ltl_list, suggested_structured_eng_list):
         if suggested_ltl_list:
             #self._listWidget_ltl.clear()
-            gui_logger.debug('idx: {0}, suggested_ltl_list: {1}'.format(idx, suggested_ltl_list[self._comboBox_select_exclusion_topic.currentText()]))
-            gui_logger.debug('Combo Box Size:{0}, suggested_ltl_list size:{1}'.format(self._comboBox_select_exclusion_topic.count(),\
-                                                                                        len(suggested_ltl_list)))
+            #gui_logger.debug('idx: {0}, suggested_ltl_list: {1}'.format(idx, suggested_ltl_list[self._comboBox_select_exclusion_topic.currentText()]))
+            #gui_logger.debug('Combo Box Size:{0}, suggested_ltl_list size:{1}'.format(self._comboBox_select_exclusion_topic.count(),\
+            #                                                                            len(suggested_ltl_list)))
             #ltl_item = QtGui.QListWidgetItem(suggested_ltl_list[idx])
             #self._listWidget_ltl.insertItem(0, ltl_item)
 
@@ -377,7 +377,10 @@ class PropMappingAndAnalysis(Plugin):
                 # set second column output_prop prop
                 self.same_topic_table_model.setItem(current_row_count,1,QtGui.QStandardItem(output_prop))
 
-                prop_to_topic_list = self.chain_topic_node_dotnames_published_dict['exclude_props'][output_prop][self.prop_real_to_dot_name['t'][ros_topic]]
+                if "action_topics" in ros_topic:
+                    prop_to_topic_list = self.chain_topic_node_dotnames_published_dict['exclude_props'][output_prop][self.prop_real_to_dot_name['n'][ros_topic]]
+                else:
+                    prop_to_topic_list = self.chain_topic_node_dotnames_published_dict['exclude_props'][output_prop][self.prop_real_to_dot_name['t'][ros_topic]]
                 chain_str_list = []
                 # node and topic
                 for prop_dot_name in prop_to_topic_list:
@@ -583,25 +586,25 @@ class PropMappingAndAnalysis(Plugin):
             gui_logger.log(1, "input_prop: {0} to {1}".format(input_prop, input_prop_dot_format))
 
             # recursive subscribed topics include props
-            check_resource_usage.get_subscribed_topics(input_prop_dot_format, self.input_subscribed_dotnames['include_props'][input_prop], \
+            check_resource_usage.get_subscribed_topics(input_prop_dot_format, [], self.input_subscribed_dotnames['include_props'][input_prop], \
                                   self.input_subscribed_topics['include_props'][input_prop], edges_dict, nodes_dict, \
                                   [input_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['include_props'], \
                                   input_prop, output_prop_topic_filtered_list, partial_topic_filtered_list)
 
             # recursive published topics include props
-            check_resource_usage.get_published_topics(input_prop_dot_format, self.input_published_dotnames['include_props'][input_prop], \
+            check_resource_usage.get_published_topics(input_prop_dot_format, [], self.input_published_dotnames['include_props'][input_prop], \
                                  self.input_published_topics['include_props'][input_prop], edges_dict, nodes_dict, \
                                  [input_prop_dot_format], self.chain_topic_node_dotnames_published_dict['include_props'], \
                                  input_prop, output_prop_topic_filtered_list, partial_topic_filtered_list)
 
             # recursive subscribed topics exclude props
-            check_resource_usage.get_subscribed_topics(input_prop_dot_format, self.input_subscribed_dotnames['exclude_props'][input_prop], \
+            check_resource_usage.get_subscribed_topics(input_prop_dot_format, [], self.input_subscribed_dotnames['exclude_props'][input_prop], \
                                   self.input_subscribed_topics['exclude_props'][input_prop], edges_dict, nodes_dict, \
                                   [input_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['exclude_props'], \
                                   input_prop, prop_topic_filtered_list, partial_topic_filtered_list)
 
             # recursive published topics exclude props
-            check_resource_usage.get_published_topics(input_prop_dot_format, self.input_published_dotnames['exclude_props'][input_prop], \
+            check_resource_usage.get_published_topics(input_prop_dot_format, [], self.input_published_dotnames['exclude_props'][input_prop], \
                                  self.input_published_topics['exclude_props'][input_prop], edges_dict, nodes_dict, \
                                  [input_prop_dot_format], self.chain_topic_node_dotnames_published_dict['exclude_props'], \
                                  input_prop, prop_topic_filtered_list, partial_topic_filtered_list)
@@ -622,25 +625,25 @@ class PropMappingAndAnalysis(Plugin):
             gui_logger.log(1, "input_prop: {0} to {1}".format(output_prop, output_prop_dot_format))
 
             # recursive subscribed topics include props
-            check_resource_usage.get_subscribed_topics(output_prop_dot_format, self.output_subscribed_dotnames['include_props'][output_prop], \
+            check_resource_usage.get_subscribed_topics(output_prop_dot_format, [], self.output_subscribed_dotnames['include_props'][output_prop], \
                                   self.output_subscribed_topics['include_props'][output_prop], edges_dict, nodes_dict, \
                                   [output_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['include_props'], \
                                   output_prop, [x for x in output_prop_topic_filtered_list if x != output_prop], partial_topic_filtered_list)
 
             # recursive published topics include props
-            check_resource_usage.get_published_topics(output_prop_dot_format, self.output_published_dotnames['include_props'][output_prop], \
+            check_resource_usage.get_published_topics(output_prop_dot_format, [], self.output_published_dotnames['include_props'][output_prop], \
                                  self.output_published_topics['include_props'][output_prop], edges_dict, nodes_dict, \
                                  [output_prop_dot_format], self.chain_topic_node_dotnames_published_dict['include_props'], \
                                  output_prop, [x for x in output_prop_topic_filtered_list if x != output_prop], partial_topic_filtered_list)
 
             # recursive subscribed topics exclude props
-            check_resource_usage.get_subscribed_topics(output_prop_dot_format, self.output_subscribed_dotnames['exclude_props'][output_prop], \
+            check_resource_usage.get_subscribed_topics(output_prop_dot_format, [], self.output_subscribed_dotnames['exclude_props'][output_prop], \
                                   self.output_subscribed_topics['exclude_props'][output_prop], edges_dict, nodes_dict, \
                                   [output_prop_dot_format], self.chain_topic_node_dotnames_subscribed_dict['exclude_props'], \
                                   output_prop, prop_topic_filtered_list, partial_topic_filtered_list)
 
             # recursive published topics exclude props
-            check_resource_usage.get_published_topics(output_prop_dot_format, self.output_published_dotnames['exclude_props'][output_prop], \
+            check_resource_usage.get_published_topics(output_prop_dot_format, [], self.output_published_dotnames['exclude_props'][output_prop], \
                                 self.output_published_topics['exclude_props'][output_prop], edges_dict, nodes_dict, \
                                  [output_prop_dot_format], self.chain_topic_node_dotnames_published_dict['exclude_props'], \
                                  output_prop, prop_topic_filtered_list, partial_topic_filtered_list)

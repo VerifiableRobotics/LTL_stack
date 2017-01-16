@@ -20,7 +20,7 @@ check_resources_logger = logging.getLogger("check_resources_logger")
 from controller_executor import file_operations
 
 
-def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
+def get_subscribed_topics(prop_dot_format, visited_prop_dotname_list, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
                           chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[]):
     # recursive subscribed topics
     for src_dest_pair in edges_dict.keys():
@@ -29,7 +29,7 @@ def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_d
         # not going back in the case for nodelet and actions
         # and also not keep going with topics in the filtered list
         if src_dest_pair[1] == prop_dot_format and \
-        not src_dest_pair[0] in prop_dotname_list and \
+        not src_dest_pair[0] in visited_prop_dotname_list and \
         not ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) in topic_filtered_list and \
         not any([x in ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) for x in partial_topic_filtered_list]):
         #not ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) in prop_list:
@@ -39,6 +39,7 @@ def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_d
 
             # append dotname no matter what
             prop_dotname_list.append(src_dest_pair[0])
+            visited_prop_dotname_list.append(src_dest_pair[0])
 
             # append to the chain_topic_node_list
             chain_topic_node_list_new = chain_topic_node_list+ [src_dest_pair[0]]
@@ -49,15 +50,15 @@ def get_subscribed_topics(prop_dot_format, prop_dotname_list, prop_list, edges_d
                 chain_topic_node_dict[prop][src_dest_pair[0]] = chain_topic_node_list_new
 
             # check if it is a node or topic. Only add in if it's a topic
-            if src_dest_pair[0].startswith('t__'):
+            if src_dest_pair[0].startswith('t__') or "action_topics" in src_dest_pair[0]:
                 prop_list.append(ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']))
 
             # then iterate until we reach the end
-            get_subscribed_topics(src_dest_pair[0], prop_dotname_list, prop_list, edges_dict, nodes_dict, \
+            get_subscribed_topics(src_dest_pair[0], copy.deepcopy(visited_prop_dotname_list), prop_dotname_list, prop_list, edges_dict, nodes_dict, \
                                   copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, topic_filtered_list, partial_topic_filtered_list)
 
 
-def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
+def get_published_topics(prop_dot_format, visited_prop_dotname_list, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
                          chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[]):
     # recursive published topics
     for src_dest_pair in edges_dict.keys():
@@ -69,7 +70,7 @@ def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_di
         # and also not keep going with topics in the filtered list
         # and not going if we find partial of these topics
         if src_dest_pair[0] == prop_dot_format and \
-        not src_dest_pair[1] in prop_dotname_list and \
+        not src_dest_pair[1] in visited_prop_dotname_list and \
         not ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']) in topic_filtered_list and\
         not any([x in ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']) for x in partial_topic_filtered_list]):
         #not ast.literal_eval(nodes_dict[src_dest_pair[1][0]['attributes']['label']) in prop_list:
@@ -82,6 +83,7 @@ def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_di
 
             # append dotname no matter what
             prop_dotname_list.append(src_dest_pair[1])
+            visited_prop_dotname_list.append(src_dest_pair[1])
 
             # append to the chain_topic_node_list
             chain_topic_node_list_new = chain_topic_node_list+ [src_dest_pair[1]]
@@ -95,11 +97,11 @@ def get_published_topics(prop_dot_format, prop_dotname_list, prop_list, edges_di
                 chain_topic_node_dict[prop][src_dest_pair[1]] = chain_topic_node_list_new
 
             # check if it is a node or topic. Only add in if it's a topic
-            if src_dest_pair[1].startswith('t__'):
+            if src_dest_pair[1].startswith('t__') or "action_topics" in src_dest_pair[1]:
                 prop_list.append(ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']))
 
             # then iterate until we reach the end
-            get_published_topics(src_dest_pair[1], prop_dotname_list, prop_list, edges_dict, nodes_dict, \
+            get_published_topics(src_dest_pair[1], copy.deepcopy(visited_prop_dotname_list), prop_dotname_list, prop_list, edges_dict, nodes_dict, \
                                     copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, topic_filtered_list, partial_topic_filtered_list)
 
 ##################################################################################
@@ -395,13 +397,13 @@ if __name__ == "__main__":
         check_resources_logger.debug("input_prop: {0} to {1}".format(input_prop, input_prop_dot_format))
 
         # recursive subscribed topics
-        get_subscribed_topics(input_prop_dot_format, input_subscribed_dotnames[input_prop], \
+        get_subscribed_topics(input_prop_dot_format, [], input_subscribed_dotnames[input_prop], \
                               input_subscribed_topics[input_prop], edges_dict, nodes_dict, \
-                              [input_prop_dot_format], chain_topic_node_dotnames_published_dict, input_prop, \
+                              [input_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, input_prop, \
                               topic_filtered_list, partial_topic_filtered_list)
 
         # recursive published topics
-        get_published_topics(input_prop_dot_format, input_published_dotnames[input_prop], \
+        get_published_topics(input_prop_dot_format, [], input_published_dotnames[input_prop], \
                              input_published_topics[input_prop], edges_dict, nodes_dict, \
                              [input_prop_dot_format], chain_topic_node_dotnames_published_dict, input_prop, \
                              topic_filtered_list, partial_topic_filtered_list)
@@ -424,15 +426,15 @@ if __name__ == "__main__":
         check_resources_logger.debug("input_prop: {0} to {1}".format(output_prop, output_prop_dot_format))
 
         # recursive subscribed topics
-        get_subscribed_topics(output_prop_dot_format, output_subscribed_dotnames[output_prop], \
+        get_subscribed_topics(output_prop_dot_format, [], output_subscribed_dotnames[output_prop], \
                               output_subscribed_topics[output_prop], edges_dict, nodes_dict, \
                               [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, \
                               output_prop, topic_filtered_list, partial_topic_filtered_list)
 
         # recursive published topics
-        get_published_topics(output_prop_dot_format, output_published_dotnames[output_prop], \
+        get_published_topics(output_prop_dot_format, [], output_published_dotnames[output_prop], \
                              output_published_topics[output_prop], edges_dict, nodes_dict, \
-                             [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, \
+                             [output_prop_dot_format], chain_topic_node_dotnames_published_dict, \
                              output_prop, topic_filtered_list, partial_topic_filtered_list)
 
     #check_resources_logger.info("Published topics - bedroom: {0}".format(output_published_topics['bedroom']))
