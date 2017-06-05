@@ -90,3 +90,7 @@ ENV/
 .ropeproject
 
 .fuse_hidden*
+
+# pics
+*.png
+
