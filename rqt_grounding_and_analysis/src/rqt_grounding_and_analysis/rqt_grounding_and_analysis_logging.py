@@ -9,7 +9,8 @@ import sys, os
 import time
 
 loggerLevel = {"gui":"DEBUG",\
-               "check_resources": "DEBUG"}
+               "check_resources": "DEBUG",\
+               "analysis_multirobot": 'DEBUG'}
 
 def setupLogging(loggerLevel=None):
     # Set up loggers for printing error messages
@@ -40,7 +41,8 @@ def setupLogging(loggerLevel=None):
             return self.colorize(record.levelname, precolor)
 
     loggers = {"gui": logging.getLogger("gui_logger"), \
-               "check_resources": logging.getLogger("check_resources_logger")}
+               "check_resources": logging.getLogger("check_resources_logger"), \
+               "analysis_multirobot": logging.getLogger("analysis_multirobot_logger")}
 
     h = logging.StreamHandler()
     f = ColorLogFormatter()

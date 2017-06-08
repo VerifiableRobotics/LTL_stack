@@ -21,7 +21,8 @@ from controller_executor import file_operations
 
 
 def get_subscribed_topics(prop_dot_format, visited_prop_dotname_list, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                          chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[]):
+                          chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[],\
+                          chain_prop_dot_to_topic_dot_subscribed_dict={}):
     # recursive subscribed topics
     for src_dest_pair in edges_dict.keys():
 
@@ -49,6 +50,12 @@ def get_subscribed_topics(prop_dot_format, visited_prop_dotname_list, prop_dotna
                     len(chain_topic_node_list_new) < len(chain_topic_node_dict[prop][src_dest_pair[0]]):
                 chain_topic_node_dict[prop][src_dest_pair[0]] = chain_topic_node_list_new
 
+            # save node name to topic names
+            if prop_dot_format in chain_prop_dot_to_topic_dot_subscribed_dict.keys() and \
+            (not src_dest_pair[0] in chain_prop_dot_to_topic_dot_subscribed_dict[prop_dot_format].keys() or \
+                    len(chain_topic_node_list_new) < len(chain_prop_dot_to_topic_dot_subscribed_dict[prop_dot_format][src_dest_pair[0]])):
+                chain_prop_dot_to_topic_dot_subscribed_dict[prop_dot_format][src_dest_pair[0]] = chain_topic_node_list_new
+
             # check if it is a node or topic. Only add in if it's a topic
             if src_dest_pair[0].startswith('t__') or "action_topics" in src_dest_pair[0]:
                 prop_list.append(ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']))
@@ -59,7 +66,8 @@ def get_subscribed_topics(prop_dot_format, visited_prop_dotname_list, prop_dotna
 
 
 def get_published_topics(prop_dot_format, visited_prop_dotname_list, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                         chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[]):
+                         chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[],\
+                         chain_prop_dot_to_topic_dot_published_dict={}):
     # recursive published topics
     for src_dest_pair in edges_dict.keys():
         #if "action_topics" in src_dest_pair[0] and "move_base" in src_dest_pair[1]:
@@ -95,6 +103,12 @@ def get_published_topics(prop_dot_format, visited_prop_dotname_list, prop_dotnam
             if not src_dest_pair[1] in chain_topic_node_dict[prop].keys() or \
                 len(chain_topic_node_list_new) < len(chain_topic_node_dict[prop][src_dest_pair[1]]):
                 chain_topic_node_dict[prop][src_dest_pair[1]] = chain_topic_node_list_new
+
+            # save node name to topic names
+            if prop_dot_format in chain_prop_dot_to_topic_dot_published_dict.keys() and \
+            (not src_dest_pair[1] in chain_prop_dot_to_topic_dot_published_dict[prop_dot_format].keys() or \
+                len(chain_topic_node_list_new) < len(chain_prop_dot_to_topic_dot_published_dict[prop_dot_format][src_dest_pair[1]])):
+                chain_prop_dot_to_topic_dot_published_dict[prop_dot_format][src_dest_pair[1]] = chain_topic_node_list_new
 
             # check if it is a node or topic. Only add in if it's a topic
             if src_dest_pair[1].startswith('t__') or "action_topics" in src_dest_pair[1]:
@@ -219,7 +233,7 @@ def check_possible_concurrent_topic_access(published_topics):
         # find command elements excluding /rosout
         common_topics = list(set(seed_prop[1]) & set(compare_prop[1]) - set(['/rosout']))
         if common_topics:
-            check_resources_logger.debug('common publishing topic(s): {0}'.format(common_topics))
+            check_resources_logger.log(6, 'common publishing topic(s): {0}'.format(common_topics))
 
             for topic in common_topics:
                 if not topic in possible_concurrent_topic_access.keys():
@@ -330,7 +344,8 @@ def check_left_behind_robot_per_prop(output_published_topics, robot_list, topic_
     for output_prop, topic_to_robot_dict in props_to_robots.iteritems():
         for topic, robot_info in topic_to_robot_dict.iteritems():
             if (set(robot_list) - robot_info['robots']) != set():
-                props_to_left_behind_robots[output_prop] = {topic: robot_info, 'missing': set(robot_list)-robot_info['robots']}
+                props_to_left_behind_robots[output_prop] = {topic: robot_info}
+                props_to_left_behind_robots[output_prop][topic].update({'missing': set(robot_list)-robot_info['robots']})
 
     # now check if a topic is used for one robot, it's also used for all robots
     for topic, topic_robot_dict in robot_topic_usage.iteritems():
@@ -344,8 +359,8 @@ def check_left_behind_robot_per_prop(output_published_topics, robot_list, topic_
     #    yaml.dump(props_to_robots, outfile, default_flow_style=False)
     #with open('props_to_left_behind_robots.yml', 'w') as outfile:
     #    yaml.dump(props_to_left_behind_robots, outfile, default_flow_style=False)
-    #check_resources_logger.info('props_to_left_behind_robots: {0}'.format(props_to_left_behind_robots))
-    #check_resources_logger.info('topic_to_left_behind_robots: {0}'.format(topic_to_left_behind_robots))
+    check_resources_logger.info('props_to_left_behind_robots: {0}'.format(props_to_left_behind_robots))
+    check_resources_logger.info('topic_to_left_behind_robots: {0}'.format(topic_to_left_behind_robots))
 
     return props_to_left_behind_robots, topic_to_left_behind_robots
 
@@ -533,6 +548,9 @@ if __name__ == "__main__":
     ###############
     ### outputs ###
     ###############
+    chain_prop_dot_to_topic_dot_subscribed_dict = {}
+    chain_prop_dot_to_topic_dot_published_dict = {}
+
     for output_prop in output_prop_to_ros_info.keys():
 
         # first check if it's a list
@@ -547,6 +565,9 @@ if __name__ == "__main__":
             #output_prop_dot_format = "n__"+example_name+'_outputs_'+output_prop.replace("/","_")
             output_prop_dot_format_list.append("n__"+"_".join([x for x in output_prop_to_ros_info[output_prop]['node'].split("/") if x]))
 
+        chain_prop_dot_to_topic_dot_published_dict.update(dict(((output_prop_dot_format, {}) for output_prop_dot_format in output_prop_dot_format_list)))
+        chain_prop_dot_to_topic_dot_subscribed_dict.update(dict(((output_prop_dot_format, {}) for output_prop_dot_format in output_prop_dot_format_list)))
+
         check_resources_logger.debug("output_prop: {0} to {1}".format(output_prop, output_prop_dot_format_list))
 
         for output_prop_dot_format in output_prop_dot_format_list:
@@ -555,13 +576,13 @@ if __name__ == "__main__":
             get_subscribed_topics(output_prop_dot_format, [], output_subscribed_dotnames[output_prop], \
                                   output_subscribed_topics[output_prop], edges_dict, nodes_dict, \
                                   [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, \
-                                  output_prop, topic_filtered_list, partial_topic_filtered_list)
+                                  output_prop, topic_filtered_list, partial_topic_filtered_list, chain_prop_dot_to_topic_dot_subscribed_dict)
 
             # recursive published topics
             get_published_topics(output_prop_dot_format, [], output_published_dotnames[output_prop], \
                                  output_published_topics[output_prop], edges_dict, nodes_dict, \
                                  [output_prop_dot_format], chain_topic_node_dotnames_published_dict, \
-                                 output_prop, topic_filtered_list, partial_topic_filtered_list)
+                                 output_prop, topic_filtered_list, partial_topic_filtered_list, chain_prop_dot_to_topic_dot_published_dict)
 
     #check_resources_logger.info("Published topics - bedroom: {0}".format(output_published_topics['bedroom']))
 
@@ -584,13 +605,15 @@ if __name__ == "__main__":
 
 
     # now call for comparison
-    #check_possible_concurrent_topic_access(output_published_topics)
+    check_possible_concurrent_topic_access(output_published_topics)
 
     #check_possible_action_affected_sensors(input_subscribed_topics, output_published_topics)
     check_possible_action_affected_sensors(input_prop_to_ros_info, output_prop_to_ros_info.keys(), \
                                             prop_real_to_dot_name, output_published_dotnames)
 
     # for mutliple robots
+    # sphero_wpp, sphero_ggw, sphero_wrb
+    # /collision,/diagnostics,/imu,/odom
     robot_list = ['sphero_wpp', 'sphero_ggw', 'sphero_wrb']
     parameter_topics = ['/parameter_descriptions', '/parameter_updates', '/move_base/cancel']
     sphero_sensor_topics = ['/collision','/diagnostics','/imu','/odom']
