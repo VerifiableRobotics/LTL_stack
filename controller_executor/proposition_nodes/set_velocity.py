@@ -20,7 +20,7 @@ class SetVelocityActuator(object):
     def callback(self, data):
         # save latest info
         self.controller_request_bool = data.data
-        print data.data
+        #print data.data
 
 
 if __name__ == "__main__":
@@ -59,7 +59,7 @@ if __name__ == "__main__":
             a._move_base_cancel_pub.publish(actionlib_msgs.msg.GoalID())
 
             pub.publish(vel_msg)
-            node_logger.debug(vel_msg)
+            node_logger.log(4, vel_msg)
         #else: # stop robot
         #    pub.publish(vel_msg_zero)
         rate.sleep()
