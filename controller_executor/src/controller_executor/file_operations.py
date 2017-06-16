@@ -90,20 +90,22 @@ def create_launch_file_by_namespaces(launch_file, example_name, input_prop_to_ro
 
 
     # group node names with namespaces
-    for prop, prop_info in input_prop_to_ros_info.iteritems():
-        prop_info['node_original'] = prop_info['node']
-        prepare_populate_namespace_dict_recursive(prop, prop_info, namespaces_to_node_name, namespace_chain_to_prop)
-
-    # group node names with namespaces
-    for prop, prop_info in output_prop_to_ros_info.iteritems():
-
-        if isinstance(prop_info, list): # if it's a one-output-to-many-nodes
-            for prop_info_element in prop_info:
-                prop_info_element['node_original'] = prop_info_element['node']
-                prepare_populate_namespace_dict_recursive(prop, prop_info_element, namespaces_to_node_name, namespace_chain_to_prop)
-        else:
+    if input_prop_to_ros_info:
+        for prop, prop_info in input_prop_to_ros_info.iteritems():
             prop_info['node_original'] = prop_info['node']
             prepare_populate_namespace_dict_recursive(prop, prop_info, namespaces_to_node_name, namespace_chain_to_prop)
+
+    # group node names with namespaces
+    if output_prop_to_ros_info:
+        for prop, prop_info in output_prop_to_ros_info.iteritems():
+
+            if isinstance(prop_info, list): # if it's a one-output-to-many-nodes
+                for prop_info_element in prop_info:
+                    prop_info_element['node_original'] = prop_info_element['node']
+                    prepare_populate_namespace_dict_recursive(prop, prop_info_element, namespaces_to_node_name, namespace_chain_to_prop)
+            else:
+                prop_info['node_original'] = prop_info['node']
+                prepare_populate_namespace_dict_recursive(prop, prop_info, namespaces_to_node_name, namespace_chain_to_prop)
 
 
     print 'namespaces_to_node_name: {0}'.format(namespaces_to_node_name)

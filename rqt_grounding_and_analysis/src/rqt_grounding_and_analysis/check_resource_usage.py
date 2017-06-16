@@ -612,7 +612,7 @@ if __name__ == "__main__":
                                             prop_real_to_dot_name, output_published_dotnames)
 
     # for mutliple robots
-    # sphero_wpp, sphero_ggw, sphero_wrb
+    # sphero_wpw, sphero_ggw, sphero_rgw, sphero_wpp
     # /collision,/diagnostics,/imu,/odom
     robot_list = ['sphero_wpp', 'sphero_ggw', 'sphero_wrb']
     parameter_topics = ['/parameter_descriptions', '/parameter_updates', '/move_base/cancel']
