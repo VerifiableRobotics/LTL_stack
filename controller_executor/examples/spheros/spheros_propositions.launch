@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<launch>
+
+	<group ns="spheros">
+		<group ns="inputs">
+			<node name="up_arrow" pkg="controller_executor" type="get_tag.py" args="up_arrow /spheros/inputs/up_arrow --tag_no 2 --sensor_topic /tag_detections" />
+			<node name="right_arrow" pkg="controller_executor" type="get_tag.py" args="right_arrow /spheros/inputs/right_arrow --tag_no 1 --sensor_topic /tag_detections" />
+			<node name="down_arrow" pkg="controller_executor" type="get_tag.py" args="down_arrow /spheros/inputs/down_arrow --tag_no 3 --sensor_topic /tag_detections" />
+			<node name="stop_sign" pkg="controller_executor" type="get_tag.py" args="stop_sign /spheros/inputs/stop_sign --tag_no 4 --sensor_topic /tag_detections" />
+			<node name="left_arrow" pkg="controller_executor" type="get_tag.py" args="left_arrow /spheros/inputs/left_arrow --tag_no 0 --sensor_topic /tag_detections" />
+		</group>
+		<group ns="outputs">
+			<group ns="sphero_wpw">
+				<node name="turn_yellow" pkg="controller_executor" type="set_color.py" args="turn_yellow /spheros/outputs/turn_yellow --r 1 --b 0 --publish_topic /sphero_wpw/set_color --g 1" />
+				<node name="turn_purple" pkg="controller_executor" type="set_color.py" args="turn_purple /spheros/outputs/turn_purple --r 1 --b 1 --publish_topic /sphero_wpw/set_color --g 0" />
+				<node name="move_left" pkg="controller_executor" type="set_velocity.py" args="move_left /spheros/outputs/move_left --vx -35 --publish_topic /sphero_wpw/cmd_vel" />
+				<node name="stop" pkg="controller_executor" type="set_velocity.py" args="stop /spheros/outputs/stop --publish_topic /sphero_wpw/cmd_vel" />
+				<node name="turn_blue" pkg="controller_executor" type="set_color.py" args="turn_blue /spheros/outputs/turn_blue --r 0 --b 255 --publish_topic /sphero_wpw/set_color --g 0" />
+				<node name="move_right" pkg="controller_executor" type="set_velocity.py" args="move_right /spheros/outputs/move_right --vx 35 --publish_topic /sphero_wpw/cmd_vel" />
+				<node name="move_down" pkg="controller_executor" type="set_velocity.py" args="move_down /spheros/outputs/move_down --vy -35 --publish_topic /sphero_wpw/cmd_vel" />
+				<node name="turn_red" pkg="controller_executor" type="set_color.py" args="turn_red /spheros/outputs/turn_red --r 255 --b 0 --publish_topic /sphero_wpw/set_color --g 0" />
+				<node name="turn_green" pkg="controller_executor" type="set_color.py" args="turn_green /spheros/outputs/turn_green --r 0 --b 0 --publish_topic /sphero_wpw/set_color --g 255" />
+				<node name="move_up" pkg="controller_executor" type="set_velocity.py" args="move_up /spheros/outputs/move_up --vy 35 --publish_topic /sphero_wpw/cmd_vel" />
+				<node name="turn_white" pkg="controller_executor" type="set_color.py" args="turn_white /spheros/outputs/turn_white --publish_topic /sphero_wpw/set_color" />
+			</group>
+			<group ns="sphero_ggw">
+				<node name="turn_yellow" pkg="controller_executor" type="set_color.py" args="turn_yellow /spheros/outputs/turn_yellow --r 1 --b 0 --publish_topic /sphero_ggw/set_color --g 1" />
+				<node name="turn_purple" pkg="controller_executor" type="set_color.py" args="turn_purple /spheros/outputs/turn_purple --r 1 --b 1 --publish_topic /sphero_ggw/set_color --g 0" />
+				<node name="move_left" pkg="controller_executor" type="set_velocity.py" args="move_left /spheros/outputs/move_left --vx -35 --publish_topic /sphero_ggw/cmd_vel" />
+				<node name="stop" pkg="controller_executor" type="set_velocity.py" args="stop /spheros/outputs/stop --publish_topic /sphero_ggw/cmd_vel" />
+				<node name="turn_blue" pkg="controller_executor" type="set_color.py" args="turn_blue /spheros/outputs/turn_blue --r 0 --b 255 --publish_topic /sphero_ggw/set_color --g 0" />
+				<node name="move_right" pkg="controller_executor" type="set_velocity.py" args="move_right /spheros/outputs/move_right --vx 35 --publish_topic /sphero_ggw/cmd_vel" />
+				<node name="move_down" pkg="controller_executor" type="set_velocity.py" args="move_down /spheros/outputs/move_down --vy -35 --publish_topic /sphero_ggw/cmd_vel" />
+				<node name="turn_red" pkg="controller_executor" type="set_color.py" args="turn_red /spheros/outputs/turn_red --r 255 --b 0 --publish_topic /sphero_ggw/set_color --g 0" />
+				<node name="turn_green" pkg="controller_executor" type="set_color.py" args="turn_green /spheros/outputs/turn_green --r 0 --b 0 --publish_topic /sphero_ggw/set_color --g 255" />
+				<node name="move_up" pkg="controller_executor" type="set_velocity.py" args="move_up /spheros/outputs/move_up --vy 35 --publish_topic /sphero_ggw/cmd_vel" />
+				<node name="turn_white" pkg="controller_executor" type="set_color.py" args="turn_white /spheros/outputs/turn_white --publish_topic /sphero_ggw/set_color" />
+			</group>
+			<group ns="sphero_wpp">
+				<node name="turn_yellow" pkg="controller_executor" type="set_color.py" args="turn_yellow /spheros/outputs/turn_yellow --r 1 --b 0 --publish_topic /sphero_wpp/set_color --g 1" />
+				<node name="turn_purple" pkg="controller_executor" type="set_color.py" args="turn_purple /spheros/outputs/turn_purple --r 1 --b 1 --publish_topic /sphero_wpp/set_color --g 0" />
+				<node name="move_left" pkg="controller_executor" type="set_velocity.py" args="move_left /spheros/outputs/move_left --vx -35 --publish_topic /sphero_wpp/cmd_vel" />
+				<node name="stop" pkg="controller_executor" type="set_velocity.py" args="stop /spheros/outputs/stop --publish_topic /sphero_wpp/cmd_vel" />
+				<node name="turn_blue" pkg="controller_executor" type="set_color.py" args="turn_blue /spheros/outputs/turn_blue --r 0 --b 255 --publish_topic /sphero_wpp/set_color --g 0" />
+				<node name="move_right" pkg="controller_executor" type="set_velocity.py" args="move_right /spheros/outputs/move_right --vx 35 --publish_topic /sphero_wpp/cmd_vel" />
+				<node name="move_down" pkg="controller_executor" type="set_velocity.py" args="move_down /spheros/outputs/move_down --vy -35 --publish_topic /sphero_wpp/cmd_vel" />
+				<node name="turn_red" pkg="controller_executor" type="set_color.py" args="turn_red /spheros/outputs/turn_red --r 255 --b 0 --publish_topic /sphero_wpp/set_color --g 0" />
+				<node name="turn_green" pkg="controller_executor" type="set_color.py" args="turn_green /spheros/outputs/turn_green --r 0 --b 0 --publish_topic /sphero_wpp/set_color --g 255" />
+				<node name="move_up" pkg="controller_executor" type="set_velocity.py" args="move_up /spheros/outputs/move_up --vy 35 --publish_topic /sphero_wpp/cmd_vel" />
+				<node name="turn_white" pkg="controller_executor" type="set_color.py" args="turn_white /spheros/outputs/turn_white --publish_topic /sphero_wpp/set_color" />
+			</group>
+			<group ns="sphero_rgw">
+				<node name="turn_yellow" pkg="controller_executor" type="set_color.py" args="turn_yellow /spheros/outputs/turn_yellow --r 1 --b 0 --publish_topic /sphero_rgw/set_color --g 1" />
+				<node name="turn_purple" pkg="controller_executor" type="set_color.py" args="turn_purple /spheros/outputs/turn_purple --r 1 --b 1 --publish_topic /sphero_rgw/set_color --g 0" />
+				<node name="move_left" pkg="controller_executor" type="set_velocity.py" args="move_left /spheros/outputs/move_left --vx -35 --publish_topic /sphero_rgw/cmd_vel" />
+				<node name="stop" pkg="controller_executor" type="set_velocity.py" args="stop /spheros/outputs/stop --publish_topic /sphero_rgw/cmd_vel" />
+				<node name="turn_blue" pkg="controller_executor" type="set_color.py" args="turn_blue /spheros/outputs/turn_blue --r 0 --b 255 --publish_topic /sphero_rgw/set_color --g 0" />
+				<node name="move_right" pkg="controller_executor" type="set_velocity.py" args="move_right /spheros/outputs/move_right --vx 35 --publish_topic /sphero_rgw/cmd_vel" />
+				<node name="move_down" pkg="controller_executor" type="set_velocity.py" args="move_down /spheros/outputs/move_down --vy -35 --publish_topic /sphero_rgw/cmd_vel" />
+				<node name="turn_red" pkg="controller_executor" type="set_color.py" args="turn_red /spheros/outputs/turn_red --r 255 --b 0 --publish_topic /sphero_rgw/set_color --g 0" />
+				<node name="turn_green" pkg="controller_executor" type="set_color.py" args="turn_green /spheros/outputs/turn_green --r 0 --b 0 --publish_topic /sphero_rgw/set_color --g 255" />
+				<node name="move_up" pkg="controller_executor" type="set_velocity.py" args="move_up /spheros/outputs/move_up --vy 35 --publish_topic /sphero_rgw/cmd_vel" />
+				<node name="turn_white" pkg="controller_executor" type="set_color.py" args="turn_white /spheros/outputs/turn_white --publish_topic /sphero_rgw/set_color" />
+			</group>
+		</group>
+	</group>
+</launch>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- spheros -->
+    <node  ns="sphero_ggw" name="sphero_ggw" pkg="sphero_node" type="sphero.py" args="--target_name Sphero-GGW --target_addr 68:86:E7:08:95:5F" respawn='true' output="screen"/>
+    <node ns="sphero_wpp" name="sphero_wpp" pkg="sphero_node" type="sphero.py" args="--target_name Sphero-WPP --target_addr 68:86:E7:08:84:9E" respawn='true' output="screen"/>
+
+    <!--camera -->
+
+    <!-- launch uvc_camera -->
+    <node name="uvc_camera" pkg="uvc_camera" type="uvc_camera_node"/>
+
+    <!-- launch april tags -->
+    <arg name="image_rect" default="image_raw"/>
+    <include file="$(find controller_executor)/launch/apriltags_example.launch">
+      <arg name="image_rect" value="$(arg image_rect)"/>
+    </include>
+
+</launch>

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- spheros -->
+    <node ns="sphero_wpw" name="sphero_wpw" pkg="sphero_node" type="sphero.py" args="--target_name Sphero-WPW --target_addr 68:86:E7:09:0A:9E" respawn='true' output="screen"/>
+    <node ns="sphero_rgw" name="sphero_rgw" pkg="sphero_node" type="sphero.py" args="--target_name Sphero-RGW --target_addr 68:86:E7:09:77:D4" respawn='true' output="screen"/>
+
+</launch>

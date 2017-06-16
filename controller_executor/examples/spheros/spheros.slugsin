@@ -1,0 +1,42 @@
+[INPUT]
+left_arrow
+right_arrow
+up_arrow
+down_arrow
+stop_sign
+
+[OUTPUT]
+move_left
+move_right
+move_up
+move_down
+stop
+turn_red
+turn_yellow
+turn_green
+turn_blue
+turn_purple
+turn_white
+
+[ENV_TRANS]
+1
+
+[ENV_LIVENESS]
+1
+
+[ENV_INIT]
+1
+
+[SYS_TRANS]
+| ! left_arrow' & move_left' turn_purple'
+| ! right_arrow' & move_right' turn_blue'
+| ! up_arrow' & move_up' turn_green'
+| ! down_arrow' & move_down' turn_yellow'
+| ! stop_sign' & stop' turn_red'
+| ! ! | | | | left_arrow' right_arrow' up_arrow' down_arrow' stop_sign' turn_white'
+
+[SYS_LIVENESS]
+1
+
+[SYS_INIT]
+

@@ -1,0 +1,457 @@
+inputs:
+  left_arrow:
+    node : '/spheros/inputs/left_arrow'
+    node_publish_topic : '/spheros/inputs/left_arrow'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no : 0
+
+  right_arrow:
+    node : '/spheros/inputs/right_arrow'
+    node_publish_topic : '/spheros/inputs/right_arrow'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no : 1
+
+  up_arrow:
+    node : '/spheros/inputs/up_arrow'
+    node_publish_topic : '/spheros/inputs/up_arrow'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no : 2
+
+  down_arrow:
+    node : '/spheros/inputs/down_arrow'
+    node_publish_topic : '/spheros/inputs/down_arrow'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no : 3
+
+  stop_sign:
+    node : '/spheros/inputs/stop_sign'
+    node_publish_topic : '/spheros/inputs/stop_sign'
+    pkg : 'controller_executor'
+    filename : 'get_tag.py'
+    parameters :
+      sensor_topic : '/tag_detections'
+      tag_no : 4
+
+
+outputs:
+  move_left:
+    -
+      node : '/spheros/outputs/sphero_ggw/move_left'
+      node_subscribe_topic : '/spheros/outputs/move_left'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_ggw/cmd_vel'
+        vx: -35
+    -
+      node : '/spheros/outputs/sphero_wpp/move_left'
+      node_subscribe_topic : '/spheros/outputs/move_left'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpp/cmd_vel'
+        vx: -35
+    -
+      node : '/spheros/outputs/sphero_rgw/move_left'
+      node_subscribe_topic : '/spheros/outputs/move_left'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_rgw/cmd_vel'
+        vx: -35
+    -
+      node : '/spheros/outputs/sphero_wpw/move_left'
+      node_subscribe_topic : '/spheros/outputs/move_left'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpw/cmd_vel'
+        vx: -35
+
+  move_right:
+    -
+      node : '/spheros/outputs/sphero_ggw/move_right'
+      node_subscribe_topic : '/spheros/outputs/move_right'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_ggw/cmd_vel'
+        vx: 35
+    -
+      node : '/spheros/outputs/sphero_wpp/move_right'
+      node_subscribe_topic : '/spheros/outputs/move_right'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpp/cmd_vel'
+        vx: 35
+    -
+      node : '/spheros/outputs/sphero_rgw/move_right'
+      node_subscribe_topic : '/spheros/outputs/move_right'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_rgw/cmd_vel'
+        vx: 35
+    -
+      node : '/spheros/outputs/sphero_wpw/move_right'
+      node_subscribe_topic : '/spheros/outputs/move_right'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpw/cmd_vel'
+        vx: 35
+
+  move_up:
+    -
+      node : '/spheros/outputs/sphero_ggw/move_up'
+      node_subscribe_topic : '/spheros/outputs/move_up'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_ggw/cmd_vel'
+        vy: 35
+    -
+      node : '/spheros/outputs/sphero_wpp/move_up'
+      node_subscribe_topic : '/spheros/outputs/move_up'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpp/cmd_vel'
+        vy: 35
+    -
+      node : '/spheros/outputs/sphero_rgw/move_up'
+      node_subscribe_topic : '/spheros/outputs/move_up'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_rgw/cmd_vel'
+        vy: 35
+    -
+      node : '/spheros/outputs/sphero_wpw/move_up'
+      node_subscribe_topic : '/spheros/outputs/move_up'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpw/cmd_vel'
+        vy: 35
+
+  move_down:
+    -
+      node : '/spheros/outputs/sphero_ggw/move_down'
+      node_subscribe_topic : '/spheros/outputs/move_down'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_ggw/cmd_vel'
+        vy: -35
+    -
+      node : '/spheros/outputs/sphero_wpp/move_down'
+      node_subscribe_topic : '/spheros/outputs/move_down'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpp/cmd_vel'
+        vy: -35
+    -
+      node : '/spheros/outputs/sphero_rgw/move_down'
+      node_subscribe_topic : '/spheros/outputs/move_down'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_rgw/cmd_vel'
+        vy: -35
+    -
+      node : '/spheros/outputs/sphero_wpw/move_down'
+      node_subscribe_topic : '/spheros/outputs/move_down'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpw/cmd_vel'
+        vy: -35
+  stop:
+    -
+      node : '/spheros/outputs/sphero_ggw/stop'
+      node_subscribe_topic : '/spheros/outputs/stop'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_ggw/cmd_vel'
+    -
+      node : '/spheros/outputs/sphero_wpp/stop'
+      node_subscribe_topic : '/spheros/outputs/stop'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpp/cmd_vel'
+
+    -
+      node : '/spheros/outputs/sphero_rgw/stop'
+      node_subscribe_topic : '/spheros/outputs/stop'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_rgw/cmd_vel'
+    -
+      node : '/spheros/outputs/sphero_wpw/stop'
+      node_subscribe_topic : '/spheros/outputs/stop'
+      pkg : 'controller_executor'
+      filename : 'set_velocity.py'
+      parameters :
+        publish_topic : '/sphero_wpw/cmd_vel'
+
+  turn_red:
+    -
+      node : '/spheros/outputs/sphero_ggw/turn_red'
+      node_subscribe_topic : '/spheros/outputs/turn_red'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_ggw/set_color'
+        r : 255
+        g : 0
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_wpp/turn_red'
+      node_subscribe_topic : '/spheros/outputs/turn_red'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpp/set_color'
+        r : 255
+        g : 0
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_rgw/turn_red'
+      node_subscribe_topic : '/spheros/outputs/turn_red'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_rgw/set_color'
+        r : 255
+        g : 0
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_wpw/turn_red'
+      node_subscribe_topic : '/spheros/outputs/turn_red'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpw/set_color'
+        r : 255
+        g : 0
+        b : 0
+
+  turn_yellow:
+    -
+      node : '/spheros/outputs/sphero_ggw/turn_yellow'
+      node_subscribe_topic : '/spheros/outputs/turn_yellow'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_ggw/set_color'
+        r : 1
+        g : 1
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_wpp/turn_yellow'
+      node_subscribe_topic : '/spheros/outputs/turn_yellow'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpp/set_color'
+        r : 1
+        g : 1
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_rgw/turn_yellow'
+      node_subscribe_topic : '/spheros/outputs/turn_yellow'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_rgw/set_color'
+        r : 1
+        g : 1
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_wpw/turn_yellow'
+      node_subscribe_topic : '/spheros/outputs/turn_yellow'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpw/set_color'
+        r : 1
+        g : 1
+        b : 0
+
+
+  turn_green:
+    -
+      node : '/spheros/outputs/sphero_ggw/turn_green'
+      node_subscribe_topic : '/spheros/outputs/turn_green'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_ggw/set_color'
+        r : 0
+        g : 255
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_wpp/turn_green'
+      node_subscribe_topic : '/spheros/outputs/turn_green'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpp/set_color'
+        r : 0
+        g : 255
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_rgw/turn_green'
+      node_subscribe_topic : '/spheros/outputs/turn_green'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_rgw/set_color'
+        r : 0
+        g : 255
+        b : 0
+    -
+      node : '/spheros/outputs/sphero_wpw/turn_green'
+      node_subscribe_topic : '/spheros/outputs/turn_green'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpw/set_color'
+        r : 0
+        g : 255
+        b : 0
+
+  turn_blue:
+    -
+      node : '/spheros/outputs/sphero_ggw/turn_blue'
+      node_subscribe_topic : '/spheros/outputs/turn_blue'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_ggw/set_color'
+        r : 0
+        g : 0
+        b : 255
+    -
+      node : '/spheros/outputs/sphero_wpp/turn_blue'
+      node_subscribe_topic : '/spheros/outputs/turn_blue'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpp/set_color'
+        r : 0
+        g : 0
+        b : 255
+    -
+      node : '/spheros/outputs/sphero_rgw/turn_blue'
+      node_subscribe_topic : '/spheros/outputs/turn_blue'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_rgw/set_color'
+        r : 0
+        g : 0
+        b : 255
+    -
+      node : '/spheros/outputs/sphero_wpw/turn_blue'
+      node_subscribe_topic : '/spheros/outputs/turn_blue'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpw/set_color'
+        r : 0
+        g : 0
+        b : 255
+
+
+  turn_purple:
+    -
+      node : '/spheros/outputs/sphero_ggw/turn_purple'
+      node_subscribe_topic : '/spheros/outputs/turn_purple'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_ggw/set_color'
+        r : 1
+        g : 0
+        b : 1
+    -
+      node : '/spheros/outputs/sphero_wpp/turn_purple'
+      node_subscribe_topic : '/spheros/outputs/turn_purple'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpp/set_color'
+        r : 1
+        g : 0
+        b : 1
+    -
+      node : '/spheros/outputs/sphero_rgw/turn_purple'
+      node_subscribe_topic : '/spheros/outputs/turn_purple'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_rgw/set_color'
+        r : 1
+        g : 0
+        b : 1
+    -
+      node : '/spheros/outputs/sphero_wpw/turn_purple'
+      node_subscribe_topic : '/spheros/outputs/turn_purple'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpw/set_color'
+        r : 1
+        g : 0
+        b : 1
+
+
+  turn_white:
+    -
+      node : '/spheros/outputs/sphero_ggw/turn_white'
+      node_subscribe_topic : '/spheros/outputs/turn_white'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_ggw/set_color'
+    -
+      node : '/spheros/outputs/sphero_wpp/turn_white'
+      node_subscribe_topic : '/spheros/outputs/turn_white'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpp/set_color'
+
+    -
+      node : '/spheros/outputs/sphero_rgw/turn_white'
+      node_subscribe_topic : '/spheros/outputs/turn_white'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_rgw/set_color'
+    -
+      node : '/spheros/outputs/sphero_wpw/turn_white'
+      node_subscribe_topic : '/spheros/outputs/turn_white'
+      pkg : 'controller_executor'
+      filename : 'set_color.py'
+      parameters :
+        publish_topic : '/sphero_wpw/set_color'
