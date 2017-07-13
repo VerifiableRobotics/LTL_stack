@@ -418,6 +418,22 @@ class PropMappingAndAnalysis(ExtensionAnalysisMultiRobot, Plugin):
         self._tableView_node_publish.horizontalHeader().setStretchLastSection(True)
         self._tableView_node_publish.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
+    def clear_all_analysis(self):
+        # clear same topic table view
+        self.same_topic_table_model = QtGui.QStandardItemModel(0,0) #initialize with 0 rows and 0 columns
+        self._tableView_same_topic.setModel(self.same_topic_table_model)
+
+        # clear output to input table view
+        output_to_input_table_model = QtGui.QStandardItemModel(0,0) #initialize with 0 rows and 0 columns
+        self._tableView_output_to_input.setModel(output_to_input_table_model)
+
+        # clear same node publish table view
+        self.item_model_node_publish = QtGui.QStandardItemModel(0,0) #initialize with 0 rows and 0 columns
+        self._tableView_node_publish.setModel(self.item_model_node_publish)
+
+        self._textEdit_ltl.clear() # clear ltl suggestions
+        self._comboBox_select_exclusion_topic.clear() # clear all options before updating
+
 
     def populate_table_same_topic(self):
         # populate table that show same topic
@@ -566,6 +582,9 @@ class PropMappingAndAnalysis(ExtensionAnalysisMultiRobot, Plugin):
         self._tableView_output_to_input.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
 
     def load_dot_graph(self, dot_graph):
+        # clear all tables
+        self.clear_all_analysis()
+
         self.input_prop_to_ros_info, self.output_prop_to_ros_info =  self.get_mapping_snapshot()
 
         ##################  #################
@@ -826,6 +845,8 @@ class PropMappingAndAnalysis(ExtensionAnalysisMultiRobot, Plugin):
         # close file
         yamlHandle.close()
 
+        # change yaml directory in gui
+        self._lineEdit_load_yaml_mapping.setText(yaml_file)
 
     def get_mapping_snapshot(self):
         # get a snapshot of the current mapping
