@@ -399,7 +399,7 @@ class PropMappingAndAnalysis(ExtensionAnalysisMultiRobot, Plugin):
                         gui_logger.log(2, 'chain_str: {0}'.format(chain_str))
 
                         # set alignment
-                        #prop_item.setTextAlignment(QtCore.Qt.AlignTop|QtCore.Qt.AlignHCenter)
+                        prop_item.setTextAlignment(QtCore.Qt.AlignTop|QtCore.Qt.AlignHCenter)
                         current_row_count += 1
                         topic_count += 1
                         prop_count += 1
@@ -877,15 +877,18 @@ class PropMappingAndAnalysis(ExtensionAnalysisMultiRobot, Plugin):
         yamlHandle.write('  {prop}:\n'.format(prop=prop))
 
         for row in range(self._prop_gridLayout[prop].rowCount()):
-            #node text box
-            yamlHandle.write('    -\n')
-            yamlHandle.write('      node: {0}\n'.format(self._prop_gridLayout[prop].itemAtPosition(row,0).widget().text()))
+            item_node = self._prop_gridLayout[prop].itemAtPosition(row,0)
+            item_topic = self._prop_gridLayout[prop].itemAtPosition(row,1)
+            if item_node and item_topic:
+                #node text box
+                yamlHandle.write('    -\n')
+                yamlHandle.write('      node: {0}\n'.format(item_node.widget().text()))
 
-            #topic for that prop
-            if prop in self._input_props:
-                gui_logger.warning('write_prop_list_to_yaml: getting input props!')
-            else:
-                yamlHandle.write('      node_subscribe_topic: {0}\n\n'.format(self._prop_gridLayout[prop].itemAtPosition(row,1).widget().text()))
+                #topic for that prop
+                if prop in self._input_props:
+                    gui_logger.warning('write_prop_list_to_yaml: getting input props!')
+                else:
+                    yamlHandle.write('      node_subscribe_topic: {0}\n\n'.format(item_topic.widget().text()))
 
     def populate_grid(self):
         #############
