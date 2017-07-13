@@ -507,7 +507,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>Outputs that subscribe to different nodes publishing to the same topic</string>
+                   <string>Proposition nodes of an ouput publishing to the same topic</string>
                   </property>
                  </widget>
                 </item>

@@ -39,7 +39,8 @@ def get_subscribed_topics(prop_dot_format, visited_prop_dotname_list, prop_dotna
             check_resources_logger.log(2, "Source {0} in node_dict: {1}".format(src_dest_pair[0], str(src_dest_pair[0] in nodes_dict.keys())))
 
             # append dotname no matter what
-            prop_dotname_list.append(src_dest_pair[0])
+            if src_dest_pair[0] not in prop_dotname_list:
+                prop_dotname_list.append(src_dest_pair[0])
             visited_prop_dotname_list.append(src_dest_pair[0])
 
             # append to the chain_topic_node_list
@@ -57,7 +58,8 @@ def get_subscribed_topics(prop_dot_format, visited_prop_dotname_list, prop_dotna
                 chain_prop_dot_to_topic_dot_subscribed_dict[prop_dot_format][src_dest_pair[0]] = chain_topic_node_list_new
 
             # check if it is a node or topic. Only add in if it's a topic
-            if src_dest_pair[0].startswith('t__') or "action_topics" in src_dest_pair[0]:
+            if src_dest_pair[0].startswith('t__') or "action_topics" in src_dest_pair[0] and\
+            ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']) not in prop_list:
                 prop_list.append(ast.literal_eval(nodes_dict[src_dest_pair[0]][0]['attributes']['label']))
 
             # then iterate until we reach the end
@@ -66,7 +68,7 @@ def get_subscribed_topics(prop_dot_format, visited_prop_dotname_list, prop_dotna
 
 
 def get_published_topics(prop_dot_format, visited_prop_dotname_list, prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                         chain_topic_node_list, chain_topic_node_dict, prop, topic_filtered_list=[], partial_topic_filtered_list=[],\
+                         chain_topic_node_list, chain_topic_node_dict, prop, prop_node, topic_filtered_list=[], partial_topic_filtered_list=[],\
                          chain_prop_dot_to_topic_dot_published_dict={}):
     # recursive published topics
     for src_dest_pair in edges_dict.keys():
@@ -87,10 +89,17 @@ def get_published_topics(prop_dot_format, visited_prop_dotname_list, prop_dotnam
             #ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']) in topic_filtered_list))
 
             # retrieve our destination
-            check_resources_logger.log(2, "Dest {0} in node_dict: {1}".format(src_dest_pair[1], str(src_dest_pair[1] in nodes_dict.keys())))
+            check_resources_logger.log(2, "Dest {0} in node_dict: {1}, in visited_prop_dotname_list: {2}, in chain_topic_node_list: {3}".format(\
+                src_dest_pair[1], str(src_dest_pair[1] in nodes_dict.keys()), \
+                str(src_dest_pair[1] in visited_prop_dotname_list), \
+                str(src_dest_pair[1] in chain_topic_node_list)))
 
             # append dotname no matter what
-            prop_dotname_list.append(src_dest_pair[1])
+            if src_dest_pair[1] not in prop_dotname_list:
+                prop_dotname_list.append(src_dest_pair[1])
+                # check if it is a node or topic. Only add in if it's a topic
+                if src_dest_pair[1].startswith('t__') or "action_topics" in src_dest_pair[1]:
+                    prop_list.append(ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']))
             visited_prop_dotname_list.append(src_dest_pair[1])
 
             # append to the chain_topic_node_list
@@ -104,19 +113,20 @@ def get_published_topics(prop_dot_format, visited_prop_dotname_list, prop_dotnam
                 len(chain_topic_node_list_new) < len(chain_topic_node_dict[prop][src_dest_pair[1]]):
                 chain_topic_node_dict[prop][src_dest_pair[1]] = chain_topic_node_list_new
 
+            # keep track of chain with nodes too
+            if not src_dest_pair[1] in chain_topic_node_dict[prop_node].keys() or \
+                len(chain_topic_node_list_new) < len(chain_topic_node_dict[prop_node][src_dest_pair[1]]):
+                chain_topic_node_dict[prop_node][src_dest_pair[1]] = chain_topic_node_list_new
+
             # save node name to topic names
             if prop_dot_format in chain_prop_dot_to_topic_dot_published_dict.keys() and \
             (not src_dest_pair[1] in chain_prop_dot_to_topic_dot_published_dict[prop_dot_format].keys() or \
                 len(chain_topic_node_list_new) < len(chain_prop_dot_to_topic_dot_published_dict[prop_dot_format][src_dest_pair[1]])):
                 chain_prop_dot_to_topic_dot_published_dict[prop_dot_format][src_dest_pair[1]] = chain_topic_node_list_new
 
-            # check if it is a node or topic. Only add in if it's a topic
-            if src_dest_pair[1].startswith('t__') or "action_topics" in src_dest_pair[1]:
-                prop_list.append(ast.literal_eval(nodes_dict[src_dest_pair[1]][0]['attributes']['label']))
-
             # then iterate until we reach the end
             get_published_topics(src_dest_pair[1], copy.deepcopy(visited_prop_dotname_list), prop_dotname_list, prop_list, edges_dict, nodes_dict, \
-                                    copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, topic_filtered_list, partial_topic_filtered_list)
+                                    copy.deepcopy(chain_topic_node_list_new), chain_topic_node_dict, prop, prop_node, topic_filtered_list, partial_topic_filtered_list)
 
 ##################################################################################
 # This search is modified from:
@@ -367,9 +377,14 @@ def check_left_behind_robot_per_prop(output_published_topics, robot_list, topic_
 def check_prop_to_same_topic_from_differnt_nodes(output_published_topics, topic_filtered_list=[]):
 
     prop_to_same_topic_from_differnt_nodes = {}
+    check_resources_logger.log(8,"SAME_TOPIC_DIFFERENT_NODES- output_published_topics:{0}".format(\
+        output_published_topics))
 
     for output_prop, published_topics_list in output_published_topics.iteritems():
         duplicate_list = set([x for x in published_topics_list if published_topics_list.count(x) > 1])
+
+        check_resources_logger.log(8,'SAME_TOPIC_DIFFERENT_NODES- output {0}: duplicate_list: {1}'.format(\
+            output_prop, duplicate_list))
 
         # now filter topics
         if len(duplicate_list - set(topic_filtered_list)):
@@ -439,21 +454,23 @@ if __name__ == "__main__":
 
     # --- move_group_and_move_base ---- #
     #load dot file
-    #dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/move_group_and_move_base/youbot_lab.dot'.format(getpass.getuser()))
+    dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/move_group_and_move_base/youbot_lab.dot'.format(getpass.getuser()))
 
     #load inputs and outputs
     #input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
     #    '/home/{0}/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/move_group_and_move_base.yaml'.format(getpass.getuser()))
-    #example_name = "move_group_and_move_base"
+    input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
+        '/home/{0}/LTLROS_ws/src/controller_executor/examples/move_group_and_move_base/move_group_and_move_base_same_topic_problem_small.yaml'.format(getpass.getuser()))
+    example_name = "move_group_and_move_base"
 
     # --- spheros ---- #
     #load dot file
-    dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/spheros/spheros_two.dot'.format(getpass.getuser()))
+    #dot_file =  pydot.graph_from_dot_file('/home/{0}/Dropbox/ASL/ASL_Summer_2016/exclusions/spheros/spheros_two.dot'.format(getpass.getuser()))
 
     #load inputs and outputs
-    input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
-        '/home/{0}/LTLROS_ws/src/controller_executor/examples/spheros/spheros.yaml'.format(getpass.getuser()))
-    example_name = "spheros"
+    #input_prop_to_ros_info, output_prop_to_ros_info = file_operations.loadYAMLFile(\
+    #    '/home/{0}/LTLROS_ws/src/controller_executor/examples/spheros/spheros.yaml'.format(getpass.getuser()))
+    #example_name = "spheros"
 
     ##################  #################
     ##### NODES ######  ###### EDGES ####
@@ -513,7 +530,8 @@ if __name__ == "__main__":
     # filter some of the common topics #
     ####################################
     topic_filtered_list = ['/clock','/statistics', '/rosout', '/rviz', '/map', '/tf', '/tf_static', '/diagnostics'] + \
-                        [prop_info['node'] for prop_info_list in output_prop_to_ros_info.values() for prop_info in prop_info_list]
+                        [prop_info['node'] for prop_info_list in output_prop_to_ros_info.values() for prop_info in prop_info_list] + \
+                        [prop_info['node'] for prop_info in input_prop_to_ros_info.values()]
     partial_topic_filtered_list = ['/rviz']
 
     ###############
@@ -527,6 +545,9 @@ if __name__ == "__main__":
 
         check_resources_logger.debug("input_prop: {0} to {1}".format(input_prop, input_prop_dot_format))
 
+        if input_prop_dot_format not in chain_topic_node_dotnames_published_dict.keys():
+            chain_topic_node_dotnames_published_dict.update({input_prop_dot_format:{}})
+
         # recursive subscribed topics
         get_subscribed_topics(input_prop_dot_format, [], input_subscribed_dotnames[input_prop], \
                               input_subscribed_topics[input_prop], edges_dict, nodes_dict, \
@@ -537,7 +558,7 @@ if __name__ == "__main__":
         get_published_topics(input_prop_dot_format, [], input_published_dotnames[input_prop], \
                              input_published_topics[input_prop], edges_dict, nodes_dict, \
                              [input_prop_dot_format], chain_topic_node_dotnames_published_dict, input_prop, \
-                             topic_filtered_list, partial_topic_filtered_list)
+                             input_prop_dot_format, topic_filtered_list, partial_topic_filtered_list)
 
 
     check_resources_logger.debug("input_subscribed_topics: {0}".format(str(input_subscribed_topics)))
@@ -571,18 +592,32 @@ if __name__ == "__main__":
         check_resources_logger.debug("output_prop: {0} to {1}".format(output_prop, output_prop_dot_format_list))
 
         for output_prop_dot_format in output_prop_dot_format_list:
+            # expand dict with prop_dot_format as well
+            if output_prop_dot_format not in chain_topic_node_dotnames_published_dict.keys():
+                chain_topic_node_dotnames_published_dict.update({output_prop_dot_format:{}})
+
+            check_resources_logger.debug(chain_topic_node_dotnames_published_dict)
+            temp_output_subscribed_dotnames = []
+            temp_output_published_dotnames = []
+            temp_output_subscribed_topics = []
+            temp_output_published_topics = []
 
             # recursive subscribed topics
-            get_subscribed_topics(output_prop_dot_format, [], output_subscribed_dotnames[output_prop], \
-                                  output_subscribed_topics[output_prop], edges_dict, nodes_dict, \
+            get_subscribed_topics(output_prop_dot_format, [], temp_output_subscribed_dotnames, \
+                                  temp_output_subscribed_topics, edges_dict, nodes_dict, \
                                   [output_prop_dot_format], chain_topic_node_dotnames_subscribed_dict, \
                                   output_prop, topic_filtered_list, partial_topic_filtered_list, chain_prop_dot_to_topic_dot_subscribed_dict)
 
             # recursive published topics
-            get_published_topics(output_prop_dot_format, [], output_published_dotnames[output_prop], \
-                                 output_published_topics[output_prop], edges_dict, nodes_dict, \
+            get_published_topics(output_prop_dot_format, [], temp_output_published_dotnames, \
+                                 temp_output_published_topics, edges_dict, nodes_dict, \
                                  [output_prop_dot_format], chain_topic_node_dotnames_published_dict, \
-                                 output_prop, topic_filtered_list, partial_topic_filtered_list, chain_prop_dot_to_topic_dot_published_dict)
+                                 output_prop, output_prop_dot_format, topic_filtered_list, partial_topic_filtered_list, chain_prop_dot_to_topic_dot_published_dict)
+
+            output_subscribed_dotnames[output_prop] +=copy.deepcopy(temp_output_subscribed_dotnames)
+            output_published_dotnames[output_prop] +=copy.deepcopy(temp_output_published_dotnames)
+            output_published_topics[output_prop] +=copy.deepcopy(temp_output_published_topics)
+            output_subscribed_topics[output_prop] +=copy.deepcopy(temp_output_subscribed_topics)
 
     #check_resources_logger.info("Published topics - bedroom: {0}".format(output_published_topics['bedroom']))
 
@@ -612,10 +647,11 @@ if __name__ == "__main__":
                                             prop_real_to_dot_name, output_published_dotnames)
 
     # for mutliple robots
-    # sphero_wpw, sphero_ggw, sphero_rgw, sphero_wpp
+    # sphero_wpw, sphero_ggw, sphero_rgw, sphero_wpp, sphero_wrb
     # /collision,/diagnostics,/imu,/odom
     robot_list = ['sphero_wpp', 'sphero_ggw', 'sphero_wrb']
-    parameter_topics = ['/parameter_descriptions', '/parameter_updates', '/move_base/cancel']
+    parameter_topics = ['/parameter_descriptions', '/parameter_updates', '/move_base/cancel',\
+    '/costmap_updates', '/global_costmap','/local_costmap', '/collision_object']
     sphero_sensor_topics = ['/collision','/diagnostics','/imu','/odom']
     check_resources_logger.info('--------')
     check_left_behind_robot_per_prop(output_published_topics, robot_list, topic_filtered_list+parameter_topics+sphero_sensor_topics)
