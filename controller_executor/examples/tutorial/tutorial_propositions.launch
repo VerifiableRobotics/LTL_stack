@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+	<group ns="simple">
+		<!--inputs-->
+		<group ns="inputs">
+			<node name="person" pkg="controller_executor" type="tk_button.py" args="person /simple/inputs/person --init_value false" />
+			<node name="sense_object" pkg="controller_executor" type="tk_button.py" args="sense_object /simple/inputs/sense_object --init_value false" />
+		</group>
+
+		<!--outputs-->
+		<group ns="outputs">
+			<node name="move" pkg="controller_executor" type="set_velocity.py" args="move /simple/outputs/move --vx 0 --vy 0 --ay 0 --ax 0 --vz 0 --az 1 --publish_topic /turtle1/cmd_vel" />
+			<node name="stop" pkg="controller_executor" type="set_velocity.py" args="stop /simple/outputs/stop --vx 0 --vy 0 --ay 0 --ax 0 --vz 0 --az 0 --publish_topic /turtle1/cmd_vel" />
+		</group>
+	</group>
+</launch>
