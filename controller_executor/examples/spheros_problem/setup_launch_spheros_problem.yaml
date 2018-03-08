@@ -1,0 +1,14 @@
+slugsin_file : '/home/catherine/LTLMoP/src/examples/actuations/spheros/spheros.slugsin'
+region_file : None
+destination_folder: '/home/catherine/LTLROS_ws/src/controller_executor/examples/spheros_problem'
+example_name : 'spheros_problem'
+yaml_file : '/home/catherine/LTLROS_ws/src/controller_executor/examples/spheros_problem/spheros_problem.yaml'
+LTLMoP_src_dir : '/home/catherine/LTLMoP/src'
+controller_executor_dir : '/home/catherine/LTLROS_ws/src/controller_executor'
+init_region : ''
+rot :
+scale :
+x_trans :
+y_trans :
+
+#rosrun controller_executor setup_launch_file_with_yaml.py  /home/catherine/LTLROS_ws/src/controller_executor/examples/spheros_problem/setup_launch_spheros_problem.yaml

@@ -1,0 +1,28 @@
+[INPUT]
+person
+sense_object
+
+[OUTPUT]
+stop_camera
+move
+stop
+
+[ENV_TRANS]
+1
+
+[ENV_LIVENESS]
+1
+
+[ENV_INIT]
+1
+
+[SYS_TRANS]
+| ! person' stop_camera'
+| ! ! sense_object' move'
+| ! sense_object' stop'
+
+[SYS_LIVENESS]
+1
+
+[SYS_INIT]
+

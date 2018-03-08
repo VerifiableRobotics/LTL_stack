@@ -34,12 +34,19 @@ class OutputManager(object):
             self._output_dict =dict(zip(data.keys, data.values))
 
         for idx, prop in enumerate(data.keys):
-            self._output_publishers[prop].publish(data.values[idx])
+            for pub in self._output_publishers[prop]:
+                pub.publish(data.values[idx])
             #output_manager_logger.debug('OUTPUT prop {0}:{1}'.format(prop, data.values[idx]))
 
     def setup_publish_topics(self, prop_to_ros_info):
         for prop, prop_info in prop_to_ros_info.iteritems():
-            self._output_publishers[prop] = rospy.Publisher(prop_info['node_subscribe_topic'], std_msgs.msg.Bool, queue_size=10)
+            if not prop in self._output_publishers.keys():
+                self._output_publishers[prop] = []
+            if isinstance(prop_info, list):
+                for prop_info_element in prop_info:
+                    self._output_publishers[prop].append(rospy.Publisher(prop_info[0]['node_subscribe_topic'], std_msgs.msg.Bool, queue_size=10))
+            else:
+                self._output_publishers[prop].append(rospy.Publisher(prop_info['node_subscribe_topic'], std_msgs.msg.Bool, queue_size=10))
 
 
 if __name__ == '__main__':
