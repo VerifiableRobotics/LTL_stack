@@ -16,17 +16,6 @@ inputs:
       init_value: false
 
 outputs:
-  stop_camera :
-    node : 'stop_camera'
-    node_subscribe_topic : '/simple/outputs/stop_camera'
-    pkg : 'controller_executor'
-    filename : 'start_ros_node.py'
-    parameters :
-      start_node_name : 'uvc_camera'
-      start_node_package : 'uvc_camera'
-      start_node_type : 'uvc_camera_node'
-      toggle_effect: True
-
   move :
     node : 'move'
     node_subscribe_topic : '/simple/outputs/move'

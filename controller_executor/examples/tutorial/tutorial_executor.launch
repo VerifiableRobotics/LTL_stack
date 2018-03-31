@@ -7,8 +7,8 @@
 
 
     <arg default="simple" name="example_name" />
-    <arg default="/home/catherine/LTLROS_ws/src/controller_executor/examples/simple/simple.yaml" name="yaml_file" />
-    <arg default="/home/catherine/LTLROS_ws/src/controller_executor/examples/simple/simple.slugsin" name="slugsin_file" />
+    <arg default="$(find controller_executor)/examples/tutorial/tutorial.yaml" name="yaml_file" />
+    <arg default="$(find controller_executor)/examples/tutorial/tutorial.slugsin" name="slugsin_file" />
 
     
     <group ns="$(arg example_name)">
