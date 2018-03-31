@@ -450,8 +450,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>598</width>
-                 <height>122</height>
+                 <width>281</width>
+                 <height>109</height>
                 </rect>
                </property>
                <property name="minimumSize">
@@ -493,8 +493,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>598</width>
-                 <height>122</height>
+                 <width>421</width>
+                 <height>109</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -530,7 +530,7 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>584</width>
+                 <width>375</width>
                  <height>245</height>
                 </rect>
                </property>
@@ -633,7 +633,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Robot Sensor Topics (Optional)</string>
+                <string>Robot Topics To Ignore (Optional)</string>
                </property>
               </widget>
              </item>
