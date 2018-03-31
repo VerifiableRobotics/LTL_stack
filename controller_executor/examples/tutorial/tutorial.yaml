@@ -1,7 +1,7 @@
 inputs:
   person :
     node : 'person'
-    node_publish_topic : '/simple/inputs/person'
+    node_publish_topic : '/tutorial/inputs/person'
     pkg : 'controller_executor'
     filename : 'tk_button.py'
     parameters :
@@ -9,16 +9,19 @@ inputs:
 
   sense_object :
     node : 'sense_object'
-    node_publish_topic : '/simple/inputs/sense_object'
+    node_publish_topic : '/tutorial/inputs/sense_object'
     pkg : 'controller_executor'
     filename : 'tk_button.py'
     parameters :
       init_value: false
 
 outputs:
+  stop_camera:
+    node_subscribe_topic : '/tutorial/outputs/move'
+
   move :
     node : 'move'
-    node_subscribe_topic : '/simple/outputs/move'
+    node_subscribe_topic : '/tutorial/outputs/move'
     pkg : 'controller_executor'
     filename : 'set_velocity.py'
     parameters :
@@ -32,7 +35,7 @@ outputs:
 
   stop :
     node : 'stop'
-    node_subscribe_topic : '/simple/outputs/stop'
+    node_subscribe_topic : '/tutorial/outputs/stop'
     pkg : 'controller_executor'
     filename : 'set_velocity.py'
     parameters :
