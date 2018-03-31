@@ -6,7 +6,7 @@
     <arg default="false" name="run_executor_once_started" />
 
 
-    <arg default="simple" name="example_name" />
+    <arg default="tutorial" name="example_name" />
     <arg default="$(find controller_executor)/examples/tutorial/tutorial.yaml" name="yaml_file" />
     <arg default="$(find controller_executor)/examples/tutorial/tutorial.slugsin" name="slugsin_file" />
 
