@@ -15,7 +15,7 @@
     <arg default="true" name="gui" />
 
     
-    <include file="$(find controller_executor)/examples/fullregion_firefighting_fastslow_nav_stack/turtlebot_world.launch">
+    <include file="$(find controller_executor)/examples/firefighting/turtlebot_world.launch">
         <arg name="world_file" value="worlds/empty.world" />
         <arg name="x" value="$(arg x)" />
         <arg name="y" value="$(arg y)" />
