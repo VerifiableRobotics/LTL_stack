@@ -432,7 +432,7 @@ class SlugsExecutorBase(object):
             #slugs_logger.log(4,repr(stdout))
         #slugs_logger.log(4,stdout.replace(">","").split())
 
-        return stdout.replace(">","").split()
+        return stdout.replace(">","").replace('oneStepRecovery:0','').replace('oneStepRecovery:1','').split()
 
 
 
