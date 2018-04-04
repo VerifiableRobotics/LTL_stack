@@ -122,7 +122,7 @@ python executor_standalone.py --ltl_filename  <slugsin_file> --option interactiv
                         current_input_dict = ast.literal_eval(current_input)
                         current_output_key, current_output_value = \
                             slugs_executor.init_inputs_outputs_wrapper(\
-                            current_input_dict.keys(), current_input_dict.values())
+                            current_input_dict.keys(), [bool(x) for x in current_input_dict.values()])
                         broadcast_msg = str(dict(zip(current_output_key,current_output_value)))
 
                     else:
@@ -142,7 +142,7 @@ python executor_standalone.py --ltl_filename  <slugsin_file> --option interactiv
                         current_input_dict = ast.literal_eval(current_input)
                         current_output_key, current_output_value = \
                             slugs_executor.trans_inputs_wrapper(\
-                            current_input_dict.keys(), current_input_dict.values())
+                            current_input_dict.keys(), [bool(x) for x in current_input_dict.values()])
                         broadcast_msg = str(dict(zip(current_output_key,current_output_value)))
 
                     else:
