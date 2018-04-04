@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+import abc
 import time
 import subprocess
 import io
@@ -8,28 +9,24 @@ import logging
 import threading
 import re
 import argparse
+import signal
+import termios
 try:
     from Queue import Queue, Empty
 except ImportError:
     from queue import Queue, Empty  # python 3.x
 
-import roslib; roslib.load_manifest("slugs_ros")
-import rospy
-import actionlib
-import slugs_ros.msg, slugs_ros.srv
-
 import slugs_logging
 slugs_logger = logging.getLogger("slugs_logger")
 
-class SlugsSynthesisAction(object):
+
+class SlugsSynthesisBase(object):
+    __metaclass__ = abc.ABCMeta
+
     """
     This class prepares and synthesizes controller.
     """
-    # create messages that are used to publish feedback/result
-    _feedback = slugs_ros.msg.SlugsSynthesisFeedback()
-    _result   = slugs_ros.msg.SlugsSynthesisResult()
-
-    def __init__(self, name):
+    def __init__(self, name, args=[]):
         self._action_name = name
         self._options = []
         self._slugs_process = None
@@ -38,13 +35,49 @@ class SlugsSynthesisAction(object):
         self._synthesis_done = False
         self._realizable = False
         self._lock = threading.Lock() # lock when using slugs process
+        self._quit = False
 
-        self._as = actionlib.SimpleActionServer(self._action_name+"/slugs_synthesis_action", slugs_ros.msg.SlugsSynthesisAction, \
-                                                execute_cb=self.synthesis_cb, auto_start = False)
-        rospy.loginfo("Starting SlugsSynthesisAction server with name: {name}".format(name=self._action_name+"/slugs_synthesis_action"))
+        self.init_feedback_and_result_obj() # implement by plugin class
+        self.init_implementation(args) # implement by plugin class
 
-        self._as.start()
-        rospy.on_shutdown(self.shutdown)
+
+    @abc.abstractmethod
+    def init_feedback_and_result_obj(self):
+        # abstract class. initialize feedback and result objects
+        return
+
+    @abc.abstractmethod
+    def init_implementation(self):
+        # abstract class. initialize all required variables/calls for the implementation.
+        return
+
+    @abc.abstractmethod
+    def get_execution_status(self):
+        # abstract class. Determine and return result of whether exectuion should be aborted
+        return
+
+    @abc.abstractmethod
+    def handle_no_interactive_flag(self):
+        # abstract class. Actions to perform when interactiveStrategy option is not supplemented
+        return
+
+    @abc.abstractmethod
+    def handle_intermediate_synthesis(self, syn_start_time):
+        # abstract class. Actions to perform when the synthesis process is running (providing feedback for example)
+        return
+
+    @abc.abstractmethod
+    def handle_completed_synthesis(self):
+        # abstract class. Actions to perform when the synthesis process is done
+        return
+
+    def quit_handler(self, signal, frame):
+        slugs_logger.info("Synthesis Program exiting gracefully")
+        self._quit = True
+        #self.shutdown() # shutdown is done by SlugsExecutor
+        sys.exit(0)
+
+    ############################
 
     def start_pipe_thread(self, out):
         """
@@ -75,8 +108,9 @@ class SlugsSynthesisAction(object):
         @rtype: string
         """
         line = ""
-        while not rospy.is_shutdown():
-            try:  line += queue.get_nowait() # or q.get(timeout=.1)
+        while self.get_execution_status():
+            # make sure the full output is obtained
+            try:  line += queue.get(timeout=.05) #queue.get_nowait() # or
             except Empty:
                 #slugs_logger.debug('No more output')
                 return line
@@ -84,32 +118,30 @@ class SlugsSynthesisAction(object):
     def shutdown(self):
         with self._lock:
             if self._slugs_process:
-                rospy.loginfo("Terminating slugs process ...")
+                slugs_logger.info("Terminating slugs process ...")
                 self._slugs_process.terminate()
                 self._slugs_process.wait()
 
     def synthesis_cb(self, inputs):
         # helper variables
-        r = rospy.Rate(1)
         self._synthesis_done = False
 
         # prepare for slugs command to synthesize
-        rospy.loginfo("Preparing for slugs command...")
+        slugs_logger.info("Preparing for slugs command...")
         slugs_cmd = ["slugs", inputs.ltl_filename]
         slugs_cmd[1:1] = inputs.options # append options to the command
 
         if "--interactiveStrategy" not in inputs.options:
-            rospy.loginfo("Not using interactiveStrategy")
-            slugs_cmd.append(inputs.output_filename)
+            self.handle_no_interactive_flag()
 
-        rospy.loginfo(" ".join(slugs_cmd))
+        slugs_logger.info(" ".join(slugs_cmd))
         self._options = inputs.options
 
         # Open Slugs. non-blocking call for synthesis
-        rospy.loginfo("Synthesizing finite state machine for {slugsin}...".format(slugsin=inputs.ltl_filename))
+        slugs_logger.info("Synthesizing finite state machine for {slugsin}...".format(slugsin=inputs.ltl_filename))
         with self._lock:
             if self._slugs_process:
-                rospy.loginfo("First killing the previous slugs process ...")
+                slugs_logger.info("First killing the previous slugs process ...")
                 self._slugs_process.terminate()
                 self._slugs_process.wait()
 
@@ -124,15 +156,8 @@ class SlugsSynthesisAction(object):
 
             # wait for synthesis to be done
             stderr, stdout = "",""
-            while not rospy.is_shutdown() and not self._synthesis_done: #or self._slugs_process.poll() is None): # 0 when finished?
-                self._feedback.elapsed_time = time.time() - start_time
-                self._as.publish_feedback(self._feedback)
-                r.sleep()
-
-                # check if action is terminated
-                if self._as.is_preempt_requested():
-                    rospy.loginfo("%s: Preempted" % self._action_name)
-                    self._as.set_preempted()
+            while self.get_execution_status() and not self._synthesis_done: #or self._slugs_process.poll() is None): # 0 when finished?
+                self.handle_intermediate_synthesis(start_time)
 
                 # retrieve outputs
                 stdout += self.retrieve_output(self._q_stdout)
@@ -153,17 +178,23 @@ class SlugsSynthesisAction(object):
 
         self._result.synthesis_time = time.time()- start_time
         self._result.output_message = stderr+stdout
-        rospy.loginfo(self._result.output_message)
+        #slugs_logger.info(self._result.output_message.split(" "))
         if not "unrealizable" in stderr and not "error" in stderr.lower():
             self._result.realizable = True
-        self._as.set_succeeded(self._result)
-        rospy.loginfo("Synthesis is done.")
+
+        self.handle_completed_synthesis()
+
+        slugs_logger.info("Synthesis is done.")
+
+        return self._result
 
 
-class SlugsExecutor(object):
+class SlugsExecutorBase(object):
     """
     This class handler all services in execution
     """
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self, synthesis_action):
         # obtain slugs instance from SlugsSynthesisAction
         self._synthesis_action = synthesis_action
@@ -172,6 +203,33 @@ class SlugsExecutor(object):
         self._outputs = []
         self._current_state = ""
         self._current_goal = "0"
+        self._quit = False
+
+    @abc.abstractmethod
+    def init_implementation(self):
+        # abstract class. Init objects
+        return
+
+    @abc.abstractmethod
+    def create_init_response_obj(self):
+        # abstract class. Create a initial response object
+        return
+
+    @abc.abstractmethod
+    def create_trans_response_obj(self):
+        # abstract class. Create a transition response object
+        return
+
+    @abc.abstractmethod
+    def get_execution_status(self):
+        # abstract class. Determine and return result of whether exectuion should be aborted
+        return
+
+    def quit_handler(self, signal, frame):
+        self._quit = True
+        slugs_logger.info("Executor exiting gracefully")
+        #self._synthesis_action.shutdown()
+        #sys.exit(0)
 
     ###########################################
     ### Initalize Slugs Execution Service  ####
@@ -185,7 +243,7 @@ class SlugsExecutor(object):
                 self._synthesis_action._slugs_process.stdin.flush()
 
                 stdout, stderr = "", ""
-                while not rospy.is_shutdown() and not "," in stdout:
+                while self.get_execution_status() and not "," in stdout:
                     stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
 
             else:
@@ -195,7 +253,7 @@ class SlugsExecutor(object):
 
                 # iterate until we actually get our state
                 stdout, stderr = "", ""
-                while not rospy.is_shutdown() and not (re.search('[aAgGsS01]',stdout) or 'FORCEDNONWINNING' in stdout):
+                while self.get_execution_status() and not (re.search('[aAgGsS01]',stdout) or 'FORCEDNONWINNING' in stdout):
                     stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
 
                 if 'FORCEDNONWINNING' in stdout:
@@ -234,7 +292,7 @@ class SlugsExecutor(object):
         # in the form of AaGgSs
         # A: given true value,    a:given false value
         # G: possible true value, g:possible false value
-        response = slugs_ros.srv.SlugsInitExecutionArrayResponse()
+        response = self.create_init_response_obj()
         response.current_inputs_outputs_key_array = self._inputs + self._outputs
         true_AP_idx_list = []
         for idx,element in enumerate(init_state):
@@ -244,19 +302,25 @@ class SlugsExecutor(object):
                 true_AP_idx_list.append(idx)
         slugs_logger.debug("Init state list: {init_state}".format(init_state=map(response.current_inputs_outputs_key_array.__getitem__, true_AP_idx_list)))
 
+        stdout = ""
         with self._synthesis_action._lock:
-            # set position in slugs
-            self._synthesis_action._slugs_process.stdin.write("SETPOS\n" + init_state.replace("1","1\n").replace("0","0\n")\
-                                                                 .replace("A","1\n").replace("a","0\n")\
-                                                                 .replace("G","1\n").replace("g","0\n"))
-            self._synthesis_action._slugs_process.stdin.flush()
-
             # remove all outputs
-            stdout = ""
-            while not rospy.is_shutdown() and not all(i in stdout for i in response.current_inputs_outputs_key_array):
+            while self.get_execution_status() and not all(i in stdout for i in response.current_inputs_outputs_key_array):
+
+                if not stdout or "Error" in stdout:
+                    stdout = ""
+                    # set position in slugs
+                    self._synthesis_action._slugs_process.stdin.write("SETPOS\n" + init_state.replace("1","1\n").replace("0","0\n")\
+                                                                         .replace("A","1\n").replace("a","0\n")\
+                                                                         .replace("G","1\n").replace("g","0\n"))
+                    self._synthesis_action._slugs_process.stdin.flush()
+
+
+                slugs_logger.log(4, "Still in SETPOS here")
                 stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
                 #slugs_logger.log(4, all(i in stdout for i in response.current_inputs_outputs_key_array))
-                #slugs_logger.log(2,stdout)
+                slugs_logger.log(2,stdout)
+
 
         return response
 
@@ -274,7 +338,7 @@ class SlugsExecutor(object):
             self._synthesis_action._slugs_process.stdin.flush()
 
             stdout = ""
-            while not rospy.is_shutdown() and not ("," in stdout or "error" in stdout.lower()):
+            while self.get_execution_status() and not ("," in stdout or "error" in stdout.lower()):
                 stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
                 #slugs_logger.log(2, stdout)
 
@@ -305,7 +369,7 @@ class SlugsExecutor(object):
         current_state = self.get_trans_position(trans_inputs)
 
         # create list output with the current state prop assignments
-        response = slugs_ros.srv.SlugsTransExecutionArrayResponse()
+        response = self.create_trans_response_obj()
         response.current_inputs_outputs_key_array = self._inputs + self._outputs
         true_AP_idx_list = []
         for idx, element in enumerate(current_state):
@@ -327,7 +391,7 @@ class SlugsExecutor(object):
             self._synthesis_action._slugs_process.stdin.write("XMAKEGOAL\n" + str(req.goal_id) + "\n")
             self._synthesis_action._slugs_process.stdin.flush()
             stdout = ""
-            while not rospy.is_shutdown() and not re.search(">",stdout):
+            while self.get_execution_status() and not re.search(">",stdout):
                 stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
                 #slugs_logger.log(2,repr(stdout))
 
@@ -336,7 +400,7 @@ class SlugsExecutor(object):
             self._synthesis_action._slugs_process.stdin.flush()
 
             stdout = ""
-            while not rospy.is_shutdown() and not re.search("\d\n",stdout):
+            while self.get_execution_status() and not re.search("\d\n",stdout):
                 stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
                 #slugs_logger.log(2,repr(stdout))
             current_goal = stdout.partition(">")[2]
@@ -344,58 +408,6 @@ class SlugsExecutor(object):
 
             return int(current_goal)
 
-
-    def slugs_set_goal_service(self, name):
-        s = rospy.Service(name, slugs_ros.srv.SlugsSetGoal, self.handle_set_goal)
-        rospy.loginfo("Starting SlugsSetGoal service with name: {name}".format(name=name))
-
-    def slugs_init_execution_string_service(self, name):
-        s = rospy.Service(name, slugs_ros.srv.SlugsInitExecutionString, self.handle_init_inputs_outputs_string)
-        rospy.loginfo("Starting SlugsInitExecution(String) service with name: {name}".format(name=name))
-
-    def slugs_init_execution_array_service(self, name):
-        s = rospy.Service(name, slugs_ros.srv.SlugsInitExecutionArray, self.handle_init_inputs_outputs_array)
-        rospy.loginfo("Starting SlugsInitExecution(Array) service with name: {name}".format(name=name))
-
-    def slugs_get_transition_string_service(self, name):
-        s = rospy.Service(name, slugs_ros.srv.SlugsTransExecutionString, self.handle_trans_inputs_string)
-        rospy.loginfo("Starting SlugsTransExecution(String) service with name: {name}".format(name=name))
-
-    def slugs_get_transition_array_service(self, name):
-        s = rospy.Service(name, slugs_ros.srv.SlugsTransExecutionArray, self.handle_trans_inputs_array)
-        rospy.loginfo("Starting SlugsTransExecution(Array) service with name: {name}".format(name=name))
-
-    #####################################
-    ##### Inputs and Outputs Service ####
-    #####################################
-    def slugs_get_inputs_service(self, name):
-        s = rospy.Service(name, slugs_ros.srv.SlugsGetInputs, self.handle_get_inputs)
-        rospy.loginfo("Starting SlugsGetInputs service with name: {name}".format(name=name))
-
-    def slugs_get_outputs_service(self, name):
-        s = rospy.Service(name, slugs_ros.srv.SlugsGetOutputs, self.handle_get_outputs)
-        rospy.loginfo("Starting SlugsGetOutputs service with name: {name}".format(name=name))
-
-    def handle_get_inputs(self, req):
-        response = slugs_ros.srv.SlugsGetInputsResponse()
-        response.inputs_array = self._inputs
-        return response
-
-    def handle_get_outputs(self, req):
-        response = slugs_ros.srv.SlugsGetOutputsResponse()
-        response.outputs_array = self._outputs
-        return response
-
-    #####################################
-    ### Publisher inputs and outputs ####
-    #####################################
-    def publish_AP_list(self, topic_name, string_list):
-        pub = rospy.Publisher(topic_name, slugs_ros.msg.StringArray, queue_size=10)
-        rate = rospy.Rate(self._publisher_rate) # set publish rate
-        while not rospy.is_shutdown():
-            #rospy.loginfo(string_list)
-            pub.publish(string_list)
-            rate.sleep()
 
     def get_inputs(self): return self.get_AP_list("XPRINTINPUTS\n")
     def get_outputs(self): return self.get_AP_list("XPRINTOUTPUTS\n")
@@ -415,54 +427,14 @@ class SlugsExecutor(object):
 
         # get all data
         stdout = ""
-        while not rospy.is_shutdown() and not (re.search('\w+',stdout) and stdout.endswith("\n\n")):
+        while self.get_execution_status() and not (re.search('\w+',stdout) and stdout.endswith("\n\n")):
             stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
             #slugs_logger.log(4,repr(stdout))
         #slugs_logger.log(4,stdout.replace(">","").split())
-        return stdout.replace(">","").split()
 
-    def start_topic_thread(self, target, args):
-        t = threading.Thread(target=target, args=args)
-        t.daemon = True # thread dies with the program
-        t.start()
+        return stdout.replace(">","").replace('oneStepRecovery:0','').replace('oneStepRecovery:1','').split()
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Slugs Action Server.")
-    #parser.add_argument('namespace', type=str, help='Namespace of the node.')
 
-    args, unknown = parser.parse_known_args()
 
-    rospy.init_node('slugs_server')#args.namespace
-    interactive_setup = False
-    synthesis_action = SlugsSynthesisAction(rospy.get_name())
 
-    slugs_logger.info('Started slugs action server. Waiting for request...')
-
-    while not rospy.is_shutdown():
-        # only start service if interactiveStrategy is called
-        if "--interactiveStrategy" in synthesis_action._options and \
-            synthesis_action._synthesis_done and synthesis_action._realizable and not interactive_setup:
-            # initialize executor
-            slugs_executor = SlugsExecutor(synthesis_action)
-
-            slugs_logger.info('Running interactive strategy now ...')
-
-            # start topics
-            slugs_executor.set_inputs()
-            slugs_executor.set_outputs()
-            slugs_executor.start_topic_thread(slugs_executor.publish_AP_list, (rospy.get_name()+"/input_list", slugs_executor._inputs))
-            slugs_executor.start_topic_thread(slugs_executor.publish_AP_list, (rospy.get_name()+"/output_list", slugs_executor._outputs))
-
-            # start inputs/outputs service
-            slugs_executor.slugs_get_inputs_service(rospy.get_name()+"/slugs_get_inputs_service")
-            slugs_executor.slugs_get_outputs_service(rospy.get_name()+"/slugs_get_outputs_service")
-
-            # start services
-            slugs_executor.slugs_init_execution_string_service(rospy.get_name()+"/slugs_init_execution_string_service")
-            slugs_executor.slugs_init_execution_array_service(rospy.get_name()+"/slugs_init_execution_array_service")
-            slugs_executor.slugs_get_transition_string_service(rospy.get_name()+"/slugs_trans_execution_string_service")
-            slugs_executor.slugs_get_transition_array_service(rospy.get_name()+"/slugs_trans_execution_array_service")
-            slugs_executor.slugs_set_goal_service(rospy.get_name()+"/slugs_set_goal_service")
-
-            interactive_setup = True

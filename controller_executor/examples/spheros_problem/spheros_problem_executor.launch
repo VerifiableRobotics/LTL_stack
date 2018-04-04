@@ -12,7 +12,7 @@
 
     
     <group ns="$(arg example_name)">
-        <node name="server" pkg="slugs_ros" type="slugs_startup_server.py" />
+        <node name="server" pkg="slugs_ros" type="slugs_startup_server_ros.py" />
 
         
         <node args="$(arg slugsin_file) --synthesis_options interactiveStrategy --synthesis_options sysInitRoboticsSemantics --synthesis_options cooperativeGR1Strategy --run_executor $(arg run_executor_once_started)" name="executor" pkg="controller_executor" type="executor.py" />
