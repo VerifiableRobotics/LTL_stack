@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   genmsg
   actionlib
-  move_base_msgs
   roslaunch
 )
 
