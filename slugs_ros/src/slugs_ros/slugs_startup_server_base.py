@@ -343,7 +343,7 @@ class SlugsExecutorBase(object):
                 #slugs_logger.log(2, stdout)
 
             if "error" in stdout.lower():
-                rospy.logerr("No next state! Incoming inputs: {inputs}\n stdout: {stdout}"\
+                slugs_logger.error("No next state! Incoming inputs: {inputs}\n stdout: {stdout}"\
                     .format(inputs=trans_inputs, stdout=stdout))
                 return ""
             #slugs_logger.log(2, stdout)
