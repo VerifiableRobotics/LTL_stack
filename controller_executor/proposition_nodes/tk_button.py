@@ -22,7 +22,7 @@ class TkSimpleButton(object):
 
         # create button
         node_logger.log(6, "{0} Init_value: {1}".format(self.node_name, init_value))
-        background_color = "green" if init_value else "red"
+        background_color = "yellow" if init_value else "blue"
         button_name = node_name+"-True" if init_value else node_name+"-false"
         self.button = tk.Button(text=button_name, width=20, command=self.toggle, \
                                 activebackground=background_color, bg=background_color)
@@ -43,15 +43,15 @@ class TkSimpleButton(object):
         self.button.config('text')[-1]
         to get the present state of the toggle button
         '''
-        if self.button.config('activebackground')[-1] == "green":
-            self.button.config(text=self.node_name+'-False', activebackground="red", bg = "red")
+        if self.button.config('activebackground')[-1] == "yellow":
+            self.button.config(text=self.node_name+'-False', activebackground="blue", bg = "blue")
             node_logger.debug("Sensor {0} turned False.".format(self.node_name))
         else:
-            self.button.config(text=self.node_name+'-True', activebackground="green", bg = "green")
+            self.button.config(text=self.node_name+'-True', activebackground="yellow", bg = "yellow")
             node_logger.debug("Sensor {0} turned True.".format(self.node_name))
 
     def button_state(self):
-        return True if self.button.config('activebackground')[-1] == "green" else False
+        return True if self.button.config('activebackground')[-1] == "yellow" else False
 
     def publish_info(self):
         # publish to topics
