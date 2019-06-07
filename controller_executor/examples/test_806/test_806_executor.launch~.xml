@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+
+    <arg default="true" name="run_monitor" />
+    <arg default="true" name="run_executor_button" />
+    <arg default="false" name="run_executor_once_started" />
+
+
+    <arg default="test_806" name="example_name" />
+    <arg default="/home/chuanwei/catkin_ws/src/LTL_stack/controller_executor/examples/test_806/test_806.yaml" name="yaml_file" />
+    <arg default="/home/chuanwei/catkin_ws/src/LTL_stack/controller_executor/examples/test_806/test_806.slugsin" name="slugsin_file" />
+
+    
+    <group ns="$(arg example_name)">
+        <node name="server" pkg="slugs_ros" type="slugs_startup_server_ros.py" />
+
+        
+        <node args="$(arg slugsin_file) --synthesis_options sysInitRoboticsSemantics --synthesis_options cooperativeGR1Strategy --run_executor $(arg run_executor_once_started)" name="executor" pkg="controller_executor" type="executor.py" />
+
+        
+        <node args="$(arg yaml_file)" name="input_manager" pkg="controller_executor" type="input_manager.py" />
+
+        
+        <node args="$(arg yaml_file)" name="output_manager" pkg="controller_executor" type="output_manager.py" />
+
+        
+        <node if="$(arg run_monitor)" name="monitor" pkg="controller_executor" type="proposition_monitor.py" />
+
+        
+        <node args="run_executor /$(arg example_name)/executor/run_executor --init_value $(arg run_executor_once_started)" if="$(arg run_executor_button)" name="run_executor" pkg="controller_executor" type="tk_button.py" />
+
+    </group>
+
+</launch>

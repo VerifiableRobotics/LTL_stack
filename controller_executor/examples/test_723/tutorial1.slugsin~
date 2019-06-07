@@ -1,0 +1,93 @@
+[INPUT]
+bigger
+smaller
+r1_ac
+r2_ac
+r3_ac
+r4_ac
+
+
+[OUTPUT]
+r1
+r2
+r3
+r4
+
+
+[ENV_TRANS]
+| ! r1_ac | | r1_ac' r2_ac' r3_ac'
+| ! r2_ac | | r4_ac' r2_ac' r3_ac'
+| ! r3_ac | | r1_ac' r4_ac' r3_ac'
+| ! r4_ac | | r4_ac' r2_ac' r3_ac'
+
+| ! & r1_ac r2 ! r3_ac'
+| ! & r1_ac r2 ! r4_ac'
+| ! & r1_ac r3 ! r2_ac'
+| ! & r1_ac r3 ! r4_ac'
+| ! & r2_ac r1 ! r3_ac'
+| ! & r2_ac r1 ! r4_ac'
+| ! & r2_ac r4 ! r1_ac'
+| ! & r2_ac r4 ! r3_ac'
+| ! & r3_ac r1 ! r2_ac'
+| ! & r3_ac r1 ! r4_ac'
+| ! & r3_ac r4 ! r2_ac'
+| ! & r3_ac r4 ! r1_ac'
+| ! & r4_ac r2 ! r1_ac'
+| ! & r4_ac r2 ! r3_ac'
+| ! & r4_ac r3 ! r2_ac'
+| ! & r4_ac r3 ! r1_ac'
+
+| ! & r1_ac r1 r1_ac'
+| ! & r2_ac r2 r2_ac'
+| ! & r3_ac r3 r3_ac'
+| ! & r4_ac r4 r4_ac'
+
+| | & bigger' ! smaller' & ! bigger' smaller' & ! bigger' ! smaller'
+| | | & & & r1_ac' ! r2_ac' ! r3_ac' ! r4_ac' & & & ! r1_ac' r2_ac' ! r3_ac' ! r4_ac' & & & ! r1_ac' ! r2_ac' r3_ac' ! r4_ac' & & & ! r1_ac' ! r2_ac' ! r3_ac' r4_ac'
+
+
+[ENV_INIT]
+bigger
+! smaller
+r1_ac
+! r2_ac
+! r3_ac
+! r4_ac
+
+
+[SYS_TRANS]
+
+| ! r1_ac | r2' r3'
+| ! & r1_ac smaller r2'
+| ! & r1_ac bigger r3'
+
+| ! r2_ac | r1' r4'
+| ! & r2_ac smaller r1'
+| ! & r2_ac bigger r4'
+
+| ! r3_ac | r1' r4'
+| ! & r3_ac smaller r1'
+| ! & r3_ac bigger r4'
+
+| ! r4_ac | r2' r3'
+| ! & r4_ac smaller r2'
+| ! & r4_ac bigger r3'
+
+| | | & & & r1' ! r2' ! r3' ! r4' & & & ! r1' r2' ! r3' ! r4' & & & ! r1' ! r2' r3' ! r4' & & & ! r1' ! r2' ! r3' r4'
+| | | & & & r1 ! r2 ! r3 ! r4 & & & ! r1 r2 ! r3 ! r4 & & & ! r1 ! r2 r3 ! r4 & & & ! r1 ! r2 ! r3 r4
+
+
+[SYS_INIT]
+r3
+
+
+[ENV_LIVENESS]
+| ! r1 r1_ac'
+| ! r2 r2_ac'
+| ! r3 r3_ac'
+| ! r4 r4_ac'
+
+
+
+
+

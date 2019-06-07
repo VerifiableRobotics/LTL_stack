@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+
+	<node name="sensor1" pkg="controller_executor" type="tk_button.py" args="sensor1 /test_806/inputs/sensor1 --init_value False" />
+
+</launch>

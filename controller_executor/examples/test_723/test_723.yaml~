@@ -1,0 +1,57 @@
+inputs:
+  hallway_rc:
+    node : 'hallway_rc'
+    node_publish_topic : '/test_723/inputs/hallway_rc'
+    pkg : 'controller_executor'
+    filename : 'test_723_hallway_rc.py'
+    parameters :
+      init_value: false
+
+  r547_rc:
+    node : 'r547_rc'
+    node_publish_topic : '/test_723/inputs/r547_rc'
+    pkg : 'controller_executor'
+    filename : 'test_723_r547_rc.py'
+    parameters :
+      init_value: false
+
+  r550_rc:
+    node : 'r550_rc'
+    node_publish_topic : '/test_723/inputs/r550_rc'
+    pkg : 'controller_executor'
+    filename : 'test_723_r550_rc.py'
+    parameters :
+      init_value: false
+
+  r551_rc:
+    node : 'r551_rc'
+    node_publish_topic : '/test_723/inputs/r551_rc'
+    pkg : 'controller_executor'
+    filename : 'test_723_r551_rc.py'
+    parameters :
+      init_value: false
+
+outputs:
+  hallway:
+    node : 'hallway'
+    node_subscribe_topic : '/test_723/outputs/hallway'
+    pkg : 'controller_executor'
+    filename : 'test_723_hallway.py'
+
+  r547:
+    node : 'r547'
+    node_subscribe_topic : '/test_723/outputs/r547'
+    pkg : 'controller_executor'
+    filename : 'test_723_r547.py'
+
+  r550:
+    node : 'r550'
+    node_subscribe_topic : '/test_723/outputs/r550'
+    pkg : 'controller_executor'
+    filename : 'test_723_r550.py'
+
+  r551:
+    node : 'r551'
+    node_subscribe_topic : '/test_723/outputs/r551'
+    pkg : 'controller_executor'
+    filename : 'test_723_r551.py'

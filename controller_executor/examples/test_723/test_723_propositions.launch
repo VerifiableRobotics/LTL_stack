@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node name="r550" pkg="controller_executor" type="test_723_r550.py" args="r550 /test_723/outputs/r550 " />
+	<node name="hallway" pkg="controller_executor" type="test_723_hallway.py" args="hallway /test_723/outputs/hallway " />
+	<node name="r547" pkg="controller_executor" type="test_723_r547.py" args="r547 /test_723/outputs/r547 " />
+	<node name="r551" pkg="controller_executor" type="test_723_r551.py" args="r551 /test_723/outputs/r551 " />
+	<node name="name" pkg="controller_executor" type="test_723_which_region.py"/>
+</launch>

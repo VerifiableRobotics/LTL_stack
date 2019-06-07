@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node name="r550" pkg="controller_executor" type="test_723_r550.py" args="r550 /test_723/outputs/r550 " />
+	<node name="hallway" pkg="controller_executor" type="test_723_hallway.py" args="hallway /test_723/outputs/hallway " />
+	<node name="r551_rc" pkg="controller_executor" type="test_723_r551_rc.py" args="r551_rc /test_723/inputs/r551_rc --init_value False" />
+	<node name="r547" pkg="controller_executor" type="test_723_r547.py" args="r547 /test_723/outputs/r547 " />
+	<node name="r550_rc" pkg="controller_executor" type="test_723_r550_rc.py" args="r550_rc /test_723/inputs/r550_rc --init_value True" />
+	<node name="r551" pkg="controller_executor" type="test_723_r551.py" args="r551 /test_723/outputs/r551 " />
+	<node name="r547_rc" pkg="controller_executor" type="test_723_r547_rc.py" args="r547_rc /test_723/inputs/r547_rc --init_value False" />
+	<node name="hallway_rc" pkg="controller_executor" type="test_723_hallway_rc.py" args="hallway_rc /test_723/inputs/hallway_rc --init_value False" />
+</launch>

@@ -1,0 +1,12 @@
+slugsin_file : '/home/chuanwei/ms_project/test_806/test_806.slugsin'
+region_file : None
+destination_folder: '/home/chuanwei/catkin_ws/src/LTL_stack/controller_executor/examples/test_806'
+example_name : 'test_806'
+yaml_file : '/home/chuanwei/catkin_ws/src/LTL_stack/controller_executor/examples/test_806/test_806.yaml'
+LTLMoP_src_dir : '/home/chuanwei/LTLMoP/src'
+controller_executor_dir : '/home/chuanwei/catkin_ws/src/LTL_stack/controller_executor'
+init_region : ''
+rot : 0
+scale : 0.01
+x_trans : 0
+y_trans : 0

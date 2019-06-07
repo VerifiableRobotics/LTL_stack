@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node name="r1" pkg="controller_executor" type="goforward_and_avoid_obstacle0.py" args="r1 /tutorial3/outputs/r1 " />
+	<node name="r2" pkg="controller_executor" type="goforward_and_avoid_obstacle2.py" args="r2 /tutorial3/outputs/r2 " />
+	<node name="r3" pkg="controller_executor" type="goforward_and_avoid_obstacle3.py" args="r3 /tutorial3/outputs/r3 " />
+	<!--node name="r2_ac" pkg="controller_executor" type="r2_ac.py" args="r2_ac /tutorial3/inputs/r2_ac init_value False" />
+	<node name="r3_ac" pkg="controller_executor" type="r3_ac.py" args="r3_ac /tutorial3/inputs/r3_ac init_value False" />
+	<node name="r4_ac" pkg="controller_executor" type="r4_ac.py" args="r4_ac /tutorial3/inputs/r4_ac init_value False" />
+	<node name="r1_ac" pkg="controller_executor" type="r1_ac.py" args="r1_ac /tutorial3/inputs/r1_ac init_value True" /-->
+	<node name="name" pkg="controller_executor" type="which_region.py"/>
+	<node name="bigger" pkg="controller_executor" type="tk_button.py" args="bigger /tutorial3/inputs/bigger --init_value True" />
+</launch>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node name="r550" pkg="controller_executor" type="test_806_r550.py" args="r550 /test_806/outputs/r550 " />
+	<node name="hallway" pkg="controller_executor" type="test_806_hallway.py" args="hallway /test_806/outputs/hallway " />
+	<node name="r547" pkg="controller_executor" type="test_806_r547.py" args="r547 /test_806/outputs/r547 " />
+	<node name="r551" pkg="controller_executor" type="test_806_r551.py" args="r551 /test_806/outputs/r551 " />
+
+	<node name="sensor1" pkg="controller_executor" type="tk_button.py" args="sensor1 /test_806/inputs/sensor1 --init_value False" />
+	<node name="name" pkg="controller_executor" type="test_806_which_region.py"/>
+</launch>

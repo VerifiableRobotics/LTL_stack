@@ -1,0 +1,65 @@
+inputs:
+  bigger:
+    node : 'bigger'
+    node_publish_topic : '/tutorial1/inputs/bigger'
+    pkg : 'controller_executor'
+    filename : 'tk_button.py'
+    parameters :
+      init_value: true
+
+  r1_ac:
+    node : 'r1_ac'
+    node_publish_topic : '/tutorial1/inputs/r1_ac'
+    pkg : 'controller_executor'
+    filename : 'r1_ac.py'
+    parameters :
+      init_value: true
+
+  r2_ac:
+    node : 'r2_ac'
+    node_publish_topic : '/tutorial1/inputs/r2_ac'
+    pkg : 'controller_executor'
+    filename : 'r2_ac.py'
+    parameters :
+      init_value: false
+
+  r3_ac:
+    node : 'r3_ac'
+    node_publish_topic : '/tutorial1/inputs/r3_ac'
+    pkg : 'controller_executor'
+    filename : 'r3_ac.py'
+    parameters :
+      init_value: false
+
+  r4_ac:
+    node : 'r4_ac'
+    node_publish_topic : '/tutorial1/inputs/r4_ac'
+    pkg : 'controller_executor'
+    filename : 'r4_ac.py'
+    parameters :
+      init_value: false
+
+outputs:
+  r1 :
+    node : 'r1'
+    node_subscribe_topic : '/tutorial1/outputs/r1'
+    pkg : 'controller_executor'
+    filename : 'goforward_and_avoid_obstacle0.py'
+  
+  r2 :
+    node : 'r2'
+    node_subscribe_topic : '/tutorial1/outputs/r2'
+    pkg : 'controller_executor'
+    filename : 'goforward_and_avoid_obstacle1.py'
+      
+  r3 :
+    node : 'r3'
+    node_subscribe_topic : '/tutorial1/outputs/r3'
+    pkg : 'controller_executor'
+    filename : 'goforward_and_avoid_obstacle2.py'
+      
+  r4 :
+    node : 'r4'
+    node_subscribe_topic : '/tutorial1/outputs/r4'
+    pkg : 'controller_executor'
+    filename : 'goforward_and_avoid_obstacle3.py'

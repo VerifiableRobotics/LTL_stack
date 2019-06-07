@@ -1,0 +1,56 @@
+[INPUT]
+hallway_rc
+r547_rc
+r550_rc
+r551_rc
+
+[OUTPUT]
+hallway
+r547
+r550
+r551
+
+[ENV_TRANS]
+| ! & hallway_rc hallway hallway_rc'
+| ! & r547_rc r547 r547_rc'
+| ! & r550_rc r550 r550_rc'
+| ! & r551_rc r551 r551_rc'
+| ! & hallway_rc r547 | hallway_rc' r547_rc'
+| ! & hallway_rc r550 | hallway_rc' r550_rc'
+| ! & hallway_rc r551 | hallway_rc' r551_rc'
+| ! & r547_rc hallway | r547_rc' hallway_rc'
+| ! & r550_rc hallway | r550_rc' hallway_rc'
+| ! & r551_rc hallway | r551_rc' hallway_rc'
+| & ! hallway_rc' ! ! | | r547_rc' r550_rc' r551_rc' & hallway_rc' ! | | r547_rc' r550_rc' r551_rc'
+| & ! r547_rc' ! ! | | hallway_rc' r550_rc' r551_rc' & r547_rc' ! | | hallway_rc' r550_rc' r551_rc'
+| & ! r550_rc' ! ! | | hallway_rc' r547_rc' r551_rc' & r550_rc' ! | | hallway_rc' r547_rc' r551_rc'
+| & ! r551_rc' ! ! | | hallway_rc' r547_rc' r550_rc' & r551_rc' ! | | hallway_rc' r547_rc' r550_rc'
+| | | & & & hallway_rc' ! r547_rc' ! r550_rc' ! r551_rc' & & & ! hallway_rc' r547_rc' ! r550_rc' ! r551_rc' & & & ! hallway_rc' ! r547_rc' r550_rc' ! r551_rc' & & & ! hallway_rc' ! r547_rc' ! r550_rc' r551_rc'
+
+[ENV_LIVENESS]
+| | | | | | | & hallway hallway_rc' & hallway ! hallway' & r547 r547_rc' & r547 ! r547' & r550 r550_rc' & r550 ! r550' & r551 r551_rc' & r551 ! r551'
+
+[ENV_INIT]
+1
+| | | & & & hallway_rc ! r547_rc ! r550_rc ! r551_rc & & & ! hallway_rc r547_rc ! r550_rc ! r551_rc & & & ! hallway_rc ! r547_rc r550_rc ! r551_rc & & & ! hallway_rc ! r547_rc ! r550_rc r551_rc
+
+[SYS_TRANS]
+& & & & & ! & hallway r547 ! & hallway r550 ! & hallway r551 ! & r547 r550 ! & r547 r551 ! & r550 r551
+| ! hallway_rc' | | | hallway' r547' r550' r551'
+| ! r547_rc' | r547' hallway'
+| ! r550_rc' | r550' hallway'
+| ! r551_rc' | r551' hallway'
+| ! hallway' ! | | r547' r550' r551'
+| ! r547' ! | | hallway' r550' r551'
+| ! r550' ! | | hallway' r547' r551'
+| ! r551' ! | | hallway' r547' r550'
+| | | & & & hallway ! r547 ! r550 ! r551 & & & ! hallway r547 ! r550 ! r551 & & & ! hallway ! r547 r550 ! r551 & & & ! hallway ! r547 ! r550 r551
+
+[SYS_LIVENESS]
+& r547 r547_rc
+& r550 r550_rc
+& r551 r551_rc
+
+[SYS_INIT]
+| | | & & & hallway ! r547 ! r550 ! r551 & & & ! hallway r547 ! r550 ! r551 & & & ! hallway ! r547 r550 ! r551 & & & ! hallway ! r547 ! r550 r551
+
