@@ -60,8 +60,7 @@ class SlugsSynthesisAction(SlugsSynthesisBase):
         # abstract class. Actions to perform when the synthesis process is running (providing feedback for example)
         self._feedback.elapsed_time = time.time() - syn_start_time
         self._as.publish_feedback(self._feedback)
-		#r = rospy.Rate(1) 
-        r = rospy.Rate(10) #Ji
+        r = rospy.Rate(1)
         r.sleep()
 
         # check if action is terminated
@@ -144,7 +143,7 @@ class SlugsExecutor(SlugsExecutorBase):
     ### Publisher inputs and outputs ####
     #####################################
     def publish_AP_list(self, topic_name, string_list):
-        pub = rospy.Publisher(topic_name, slugs_ros.msg.StringArray, queue_size=1)
+        pub = rospy.Publisher(topic_name, slugs_ros.msg.StringArray, queue_size=10)
         rate = rospy.Rate(self._publisher_rate) # set publish rate
         while self.get_execution_status():
             #slugs_logger.info(string_list)

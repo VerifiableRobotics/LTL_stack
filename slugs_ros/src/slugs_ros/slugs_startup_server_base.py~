@@ -110,7 +110,8 @@ class SlugsSynthesisBase(object):
         line = ""
         while self.get_execution_status():
             # make sure the full output is obtained
-            try:  line += queue.get(timeout=.05) #queue.get_nowait() # or
+	    try:  line += queue.get_nowait() #queue.get_nowait() # or(chuanwei)
+            #try:  line += queue.get(timeout=.05) #queue.get_nowait() # or
             except Empty:
                 #slugs_logger.debug('No more output')
                 return line
@@ -334,7 +335,6 @@ class SlugsExecutorBase(object):
         """
         with self._synthesis_action._lock:
             # Make the transition
-			
             self._synthesis_action._slugs_process.stdin.write("XMAKETRANS\n"+trans_inputs)
             self._synthesis_action._slugs_process.stdin.flush()
 
@@ -342,21 +342,21 @@ class SlugsExecutorBase(object):
             while self.get_execution_status() and not ("," in stdout or "error" in stdout.lower()):
                 stdout += self._synthesis_action.retrieve_output(self._synthesis_action._q_stdout)
                 #slugs_logger.log(2, stdout)
-                #slugs_logger.info("!!!!!!!!!: {inputs}\n stdout: {stdout}"\
-                    #.format(inputs=trans_inputs, stdout=stdout))#chuanwei
 
             if "error" in stdout.lower():
                 slugs_logger.error("No next state! Incoming inputs: {inputs}\n stdout: {stdout}"\
                     .format(inputs=trans_inputs, stdout=stdout))
-                #slugs_logger.info (str(self._current_state))#chuanwei
                 return ""
             #slugs_logger.log(2, stdout)
             slugs_logger.log(2, "Transition to: {current_state}".format(current_state=stdout.replace(">","").strip().partition(",")[0]))
 
             self._current_state = stdout.replace(">","").strip().partition(",")[0]
             self._current_goal = stdout.replace(">","").strip().partition(",")[2]
-            #slugs_logger.info (str(self._current_state))#chuanwei	        
-			#slugs_logger.log(2, self._current_state + "," + self._current_goal)
+            slugs_logger.info (int(self._current_state))# chuanwei change
+	    #slugs_logger.info (int(self._current_goal))
+            #slugs_logger.error("jjjjjjjjjjjjjjjjjjj")
+            #slugs_logger.error(self._current_goal)
+            #slugs_logger.log(2, self._current_state + "," + self._current_goal)
             return stdout.replace(">","").strip().partition(",")[0]
 
     def handle_trans_inputs_string(self, req):
@@ -364,7 +364,6 @@ class SlugsExecutorBase(object):
 
     def handle_trans_inputs_array(self, req):
         trans_APs_dict = dict(zip(req.trans_inputs_key_array, req.trans_inputs_value_array))
-
         # convert arrays into a string
         trans_inputs = ""
         for prop in self._inputs:
@@ -410,7 +409,6 @@ class SlugsExecutorBase(object):
                 #slugs_logger.log(2,repr(stdout))
             current_goal = stdout.partition(">")[2]
             slugs_logger.debug("current_goal:" + str(current_goal))
-
             return int(current_goal)
 
 
@@ -418,7 +416,6 @@ class SlugsExecutorBase(object):
     def get_outputs(self): return self.get_AP_list("XPRINTOUTPUTS\n")
     def set_inputs(self): self._inputs = self.get_inputs()
     def set_outputs(self): self._outputs = self.get_outputs()
-
     def get_AP_list(self, command):
         """
         This function retrieve list of atomic proposition based on the command
@@ -438,4 +435,7 @@ class SlugsExecutorBase(object):
         #slugs_logger.log(4,stdout.replace(">","").split())
 
         return stdout.replace(">","").replace('oneStepRecovery:0','').replace('oneStepRecovery:1','').split()
+
+
+
 

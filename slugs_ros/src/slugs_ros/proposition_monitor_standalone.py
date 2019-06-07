@@ -34,9 +34,9 @@ class PropositionMonitor(object):
         self.master = tk.Tk()
 
         # separate into two columns, inputs and outputs
-        self.input_frame = tk.LabelFrame(self.master, text="Inputs", padx=5, pady=5)
+        self.input_frame = tk.LabelFrame(self.master, text="Env.", padx=5, pady=5)
         self.input_frame.pack(padx=10, pady=10, side=tk.LEFT)
-        self.output_frame = tk.LabelFrame(self.master, text="Outputs", padx=5, pady=5)
+        self.output_frame = tk.LabelFrame(self.master, text="Sys.", padx=5, pady=5)
         self.output_frame.pack(padx=10, pady=10, side=tk.RIGHT)
 
         self.start_listeners()
@@ -74,14 +74,14 @@ class PropositionMonitor(object):
             # create label if it's not there
             if not prop in labels_dict:
                 labels_dict[prop] = tk.Label(label_frame, \
-                        text=prop+'-False', bg="red", width=30, height=0, padx=5, pady=5)
+                        text=prop+'-False', bg="blue", width=30, height=0, padx=5, pady=5)
                 labels_dict[prop].pack(padx=10, pady=5)
 
             # update data
             if data.values()[idx]:
-                labels_dict[prop].config(text=prop+'-True', activebackground="green", bg = "green")
+                labels_dict[prop].config(text=prop+'-True', activebackground="yellow", bg = "yellow")
             else:
-                labels_dict[prop].config(text=prop+'-False', activebackground="red", bg = "red")
+                labels_dict[prop].config(text=prop+'-False', activebackground="blue", bg = "blue")
 
     def quit(self):
         self.master.destroy()
