@@ -38,13 +38,13 @@ class ControllerExecutor(object):
         ######################
 
         # subscribe to input information
-        rospy.Subscriber('input_manager/incoming_inputs', controller_executor.msg.stringKeyBoolValueDict, callback=self.update_inputs, queue_size=1, buff_size=70000)
+        rospy.Subscriber('input_manager/incoming_inputs', controller_executor.msg.stringKeyBoolValueDict, callback=self.update_inputs)
 
         # subscribe to run executor status
         rospy.Subscriber('executor/run_executor', std_msgs.msg.Bool, callback=self.update_run_executor_status)
 
         # setup publisher for outputs
-        self.pub = rospy.Publisher('executor/incoming_outputs', controller_executor.msg.stringKeyBoolValueDict, queue_size=10)
+        self.pub = rospy.Publisher('executor/incoming_outputs', controller_executor.msg.stringKeyBoolValueDict, queue_size=1)
 
         # wait for controller to start.
         #controller_logger.info("Ready to Start. Please run executor.")
@@ -64,7 +64,6 @@ class ControllerExecutor(object):
         self._output_list = slugs_requests.slugs_get_outputs_client(self.server_name)
         rospy.wait_for_service(self.server_name+'/slugs_get_inputs_service')
         self._input_list = slugs_requests.slugs_get_inputs_client(self.server_name)
-        
 
         # extract outputs only
         self._current_outputs = {k: init_state_dict[k] for k in self._output_list if k in init_state_dict}
@@ -77,10 +76,7 @@ class ControllerExecutor(object):
 
     def update_inputs(self, data):
         self._current_inputs = self._incoming_inputs # shouldn't change with current_inputs
-        #controller_logger.error("!!1111incoming inputs"+str(self._incoming_inputs))#chuanwei
-        #controller_logger.error("!!2222dataaaa"+str(data))#chuanwei
         self._incoming_inputs = dict(zip(data.keys, data.values))
-        #controller_logger.error("!!3333incoming inputs"+str(self._incoming_inputs))#chuanwei
         # print only when there's state change
         if self._current_inputs != self._incoming_inputs:
             controller_logger.info("--- Run Executor:{0} ---".format(self._run_executor))
@@ -115,9 +111,9 @@ class ControllerExecutor(object):
         else:
             ## Pause everything ##
             # Stop robot
-            zero_vel_obj = geometry_msgs.msg.Twist()#chuanwei
-            controller_logger.debug('Stopping robot...')#chuanwei
-            self.vel_pub.publish(zero_vel_obj)#chuanwei
+            zero_vel_obj = geometry_msgs.msg.Twist()
+            controller_logger.debug('Stopping robot...')
+            self.vel_pub.publish(zero_vel_obj)
 
             # cancel actions
             self._move_base_cancel_pub.publish(actionlib_msgs.msg.GoalID())
@@ -140,7 +136,6 @@ if __name__ == '__main__':
     #controller_logger.debug(args)
 
     rospy.init_node('executor')#args.slugs_client_name)
-    #rospy.rate(10)
 
     # initialize controller. Note that server = namespace+'/server'
     controller = ControllerExecutor(args.ltl_filename, \
