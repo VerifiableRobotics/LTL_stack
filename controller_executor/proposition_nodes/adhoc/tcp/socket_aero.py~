@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import socket
+import sys
+import os
+
+class TCP:
+	def __init__(self):
+		# Create a TCP/IP socket
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		self.hsiip = os.popen('ip addr show wlp1s0 ').read().split("inet ")[1].split("/")[0]
+
+		# Connect the socket to the port on the server given by the caller
+		if(len(sys.argv)>1):
+			server_address = (sys.argv[1], 65432)
+		else:
+			server_address = (self.hsiip, 65432)
+		print >>sys.stderr, 'starting up on %s port %s' % server_address
+		self.sock.bind(server_address)
+		self.sock.listen(1)
+
+
+	def waitData(self):
+		while True:
+		    print >>sys.stderr, 'waiting for a connection'
+		    connection, client_address = self.sock.accept()
+		    try:
+			print >>sys.stderr, 'client connected:', client_address
+			while True:
+			    data = connection.recv(50)
+			    print >>sys.stderr, 'received "%s"' % data
+			    if data:
+				connection.sendall(data)
+			    else:
+				break
+				
+		    finally:
+			connection.close()
+
+if __name__ == "__main__":
+	tcp = TCP()
+	tcp.waitData()
+	

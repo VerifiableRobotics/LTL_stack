@@ -1,0 +1,14 @@
+starting up on 10.33.130.60 port 65432
+waiting for a connection
+==================== check IP =====================
+Traceback (most recent call last):
+  File "reconnect_tcp.py", line 99, in <module>
+    tcp.waitData()
+  File "reconnect_tcp.py", line 75, in waitData
+    connection, client_address = self.sock.accept()
+  File "/usr/lib/python2.7/socket.py", line 206, in accept
+    sock, addr = self._sock.accept()
+KeyboardInterrupt
+Exception KeyboardInterrupt in <module 'threading' from '/usr/lib/python2.7/threading.pyc'> ignored
+trying to update ip address
+==================== check IP =====================
