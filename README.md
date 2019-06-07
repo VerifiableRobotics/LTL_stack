@@ -1,6 +1,6 @@
 # LTL_stack
 This repository consists of three ROS Packages for running correct-by-construction controllers with ROS.
-.
+All the included examples can be operated under ROS kinetic.
 
 
 === License ===
