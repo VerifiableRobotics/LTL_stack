@@ -1,0 +1,64 @@
+[INPUT]
+PNext
+RNext
+respondR
+seeP
+flagRespond
+
+
+[OUTPUT]
+drawAttention
+moveToNext
+findP
+
+
+[ENV_TRANS]
+| ! RNext RNext'
+| ! PNext PNext'
+| ! ! PNext ! RNext'
+
+| ! ! seeP ! respondR'
+| ! respondR seeP'
+| ! & ! flagRespond ! respondR ! flagRespond'
+| ! & ! flagRespond respondR flagRespond'
+| ! flagRespond flagRespond'
+
+
+
+[ENV_INIT]
+! PNext
+! RNext
+! respondR
+! seeP
+! flagRespond
+
+
+[SYS_TRANS]
+| ! & & ! seeP ! respondR ! PNext & & drawAttention' findP' ! moveToNext'
+| ! & & seeP ! respondR ! PNext & & drawAttention' ! findP' ! moveToNext'
+| ! & respondR ! PNext & ! drawAttention' ! findP'
+| ! PNext moveToNext'
+| ! ! PNext ! moveToNext'
+! & drawAttention moveToNext
+
+
+#LIVENESS
+
+[SYS_INIT]
+! drawAttention
+! moveToNext
+! findP
+
+#TRANS
+
+[ENV_LIVENESS]
+| ! findP seeP
+| ! & seeP drawAttention respondR
+| ! flagRespond PNext
+| ! moveToNext RNext
+| ! ! respondR PNext
+
+
+[SYS_LIVENESS]
+& PNext RNext
+

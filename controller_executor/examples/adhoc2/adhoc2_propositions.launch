@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node name="moveToNext" pkg="controller_executor" type="adhoc2_moveToNext.py" args="moveToNext /adhoc2/outputs/moveToNext " />
+	<node name="seeP" pkg="controller_executor" type="adhoc2_seeP.py" args="seeP /adhoc2/inputs/seeP --init_value False" />
+	<node name="flagRespond" pkg="controller_executor" type="adhoc2_flagRespond.py" args="flagRespond /adhoc2/inputs/flagRespond --init_value False" />
+	<node name="RNext" pkg="controller_executor" type="adhoc2_RNext.py" args="RNext /adhoc2/inputs/RNext --init_value False" />
+	<node name="drawAttention" pkg="controller_executor" type="adhoc2_drawAttention.py" args="drawAttention /adhoc2/outputs/drawAttention " />
+	<node name="respondR" pkg="controller_executor" type="tk_button.py" args="respondR /adhoc2/inputs/respondR --init_value False" />
+	<node name="findP" pkg="controller_executor" type="adhoc2_findP.py" args="findP /adhoc2/outputs/findP " />
+	<node name="PNext" pkg="controller_executor" type="adhoc2_PNext.py" args="PNext /adhoc2/inputs/PNext --init_value False" />
+</launch>

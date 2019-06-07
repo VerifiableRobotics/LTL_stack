@@ -1,0 +1,59 @@
+inputs:
+  PNext:
+    node : 'PNext'
+    node_publish_topic : '/adhoc2/inputs/PNext'
+    pkg : 'controller_executor'
+    filename : 'adhoc2_PNext.py'
+    parameters :
+      init_value: false
+
+  RNext:
+    node : 'RNext'
+    node_publish_topic : '/adhoc2/inputs/RNext'
+    pkg : 'controller_executor'
+    filename : 'adhoc2_RNext.py'
+    parameters :
+      init_value: false
+
+  respondR:
+    node : 'respondR'
+    node_publish_topic : '/adhoc2/inputs/respondR'
+    pkg : 'controller_executor'
+    filename : 'tk_button.py'
+    parameters :
+      init_value: false
+
+  seeP:
+    node : 'seeP'
+    node_publish_topic : '/adhoc2/inputs/seeP'
+    pkg : 'controller_executor'
+    filename : 'adhoc2_seeP.py'
+    parameters :
+      init_value: false
+
+  flagRespond:
+    node : 'flagRespond'
+    node_publish_topic : '/adhoc2/inputs/flagRespond'
+    pkg : 'controller_executor'
+    filename : 'adhoc2_flagRespond.py'
+    parameters :
+      init_value: false
+
+outputs:
+  drawAttention:
+    node : 'drawAttention'
+    node_subscribe_topic : '/adhoc2/outputs/drawAttention'
+    pkg : 'controller_executor'
+    filename : 'adhoc2_drawAttention.py'
+
+  moveToNext:
+    node : 'moveToNext'
+    node_subscribe_topic : '/adhoc2/outputs/moveToNext'
+    pkg : 'controller_executor'
+    filename : 'adhoc2_moveToNext.py'
+
+  findP:
+    node : 'findP'
+    node_subscribe_topic : '/adhoc2/outputs/findP'
+    pkg : 'controller_executor'
+    filename : 'adhoc2_findP.py'
