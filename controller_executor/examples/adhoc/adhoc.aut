@@ -1,0 +1,90 @@
+State 0 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:0, flagRespond:0, drawAttention:0, moveToNext:0, findP:0>
+	With successors : 1, 2, 3, 4
+State 1 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:0, flagRespond:0, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 1, 2, 3, 4
+State 2 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:1, flagRespond:0, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 5, 6, 7, 8, 9, 10, 11, 12
+State 3 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:0, flagRespond:0, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 13, 14, 15, 16
+State 4 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:1, flagRespond:0, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 13, 14, 17, 18, 15, 16, 19, 20
+State 5 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:0, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 1, 2, 3, 4
+State 6 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:1, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 5, 6, 7, 8, 9, 10, 11, 12
+State 7 with rank 0 -> <PNext:0, RNext:0, respondR:1, seeP:0, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 21, 22
+State 8 with rank 0 -> <PNext:0, RNext:0, respondR:1, seeP:1, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 21, 23, 22, 24
+State 9 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:0, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 13, 14, 15, 16
+State 10 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:1, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 13, 14, 17, 18, 15, 16, 19, 20
+State 11 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:0, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 25, 26
+State 12 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:1, flagRespond:0, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 25, 27, 26, 28
+State 13 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:0, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 13, 14, 15, 16
+State 14 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:1, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 13, 14, 17, 18, 15, 16, 19, 20
+State 15 with rank 0 -> <PNext:1, RNext:1, respondR:0, seeP:0, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 15, 16
+State 16 with rank 0 -> <PNext:1, RNext:1, respondR:0, seeP:1, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 15, 16, 19, 20
+State 17 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:0, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 25, 26
+State 18 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:1, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 25, 27, 26, 28
+State 19 with rank 0 -> <PNext:1, RNext:1, respondR:1, seeP:0, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 26
+State 20 with rank 0 -> <PNext:1, RNext:1, respondR:1, seeP:1, flagRespond:0, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 26, 28
+State 21 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:1, flagRespond:1, drawAttention:0, moveToNext:0, findP:0>
+	With successors : 29, 30, 31, 32, 33, 34, 35, 36
+State 22 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:1, flagRespond:1, drawAttention:0, moveToNext:0, findP:0>
+	With successors : 37, 25, 38, 27, 39, 26, 40, 28
+State 23 with rank 0 -> <PNext:0, RNext:0, respondR:1, seeP:1, flagRespond:1, drawAttention:0, moveToNext:0, findP:0>
+	With successors : 21, 23, 22, 24
+State 24 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:1, flagRespond:1, drawAttention:0, moveToNext:0, findP:0>
+	With successors : 25, 27, 26, 28
+State 25 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:1, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 37, 25, 38, 27, 39, 26, 40, 28
+State 26 with rank 0 -> <PNext:1, RNext:1, respondR:0, seeP:1, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 39, 26, 40, 28
+State 27 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:1, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 25, 27, 26, 28
+State 28 with rank 0 -> <PNext:1, RNext:1, respondR:1, seeP:1, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 26, 28
+State 29 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:0, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 41, 42, 43, 44
+State 30 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:1, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 29, 30, 31, 32, 33, 34, 35, 36
+State 31 with rank 0 -> <PNext:0, RNext:0, respondR:1, seeP:0, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 21, 22
+State 32 with rank 0 -> <PNext:0, RNext:0, respondR:1, seeP:1, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 21, 23, 22, 24
+State 33 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:0, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 37, 25, 39, 26
+State 34 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:1, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 37, 25, 38, 27, 39, 26, 40, 28
+State 35 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:0, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 25, 26
+State 36 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:1, flagRespond:1, drawAttention:1, moveToNext:0, findP:0>
+	With successors : 25, 27, 26, 28
+State 37 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:0, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 37, 25, 39, 26
+State 38 with rank 0 -> <PNext:1, RNext:0, respondR:1, seeP:0, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 25, 26
+State 39 with rank 0 -> <PNext:1, RNext:1, respondR:0, seeP:0, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 39, 26
+State 40 with rank 0 -> <PNext:1, RNext:1, respondR:1, seeP:0, flagRespond:1, drawAttention:0, moveToNext:1, findP:0>
+	With successors : 26
+State 41 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:0, flagRespond:1, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 41, 42, 43, 44
+State 42 with rank 0 -> <PNext:0, RNext:0, respondR:0, seeP:1, flagRespond:1, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 29, 30, 31, 32, 33, 34, 35, 36
+State 43 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:0, flagRespond:1, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 37, 25, 39, 26
+State 44 with rank 0 -> <PNext:1, RNext:0, respondR:0, seeP:1, flagRespond:1, drawAttention:1, moveToNext:0, findP:1>
+	With successors : 37, 25, 38, 27, 39, 26, 40, 28
