@@ -1,0 +1,5 @@
+string[] trans_inputs_key_array
+bool[]   trans_inputs_value_array
+---
+string[] current_inputs_outputs_key_array
+bool[]   current_inputs_outputs_value_array
