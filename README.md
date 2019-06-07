@@ -1,6 +1,6 @@
 # LTL_stack
 This repository consists of three ROS Packages for running correct-by-construction controllers with ROS.
-For more information, please visit our [wiki](https://github.com/VerifiableRobotics/LTL_stack/wiki).
+.
 
 
 === License ===
